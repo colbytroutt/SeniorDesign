@@ -39,6 +39,7 @@ def aim(x, y, imageWidth, imageHeight):
 
 	yaw = (x - (imageWidth/2))*(float(cameraFOV)/imageWidth)
 	pitch = (y - (imageHeight/2))*(float(cameraFOV)/imageHeight)
+        pitch -= 5
 
 	if abs(yaw) < 2:
 		yaw = 0
@@ -112,30 +113,36 @@ def motorReading():
 
 	while(True):
 		msg = messenger.receive()
-		if msg == None:
+
+                if msg == None:
 			continue
+
+                print msg
+
 		if msg[0] == "setTargetMode":
 		    if msg[1][0]:
                         targetMode = True
                     else:
                         targetMode = False
-		elif (msg[0] == "setMedicMode"):
+		elif msg[0] == "setMedicMode":
 		    if msg[1][0]:
                         medicMode = True
                     else:
                         medicMode = False
-		elif (msg[0] == "setRobotMode"):
+		elif msg[0] == "setRobotMode":
 		    if msg[1][0]:
                         robotMode = True
                     else:
                         robotMode = False
-		elif (msg[0] == "setFiringMode"):
-			if(not fireMode):
-				hc.start()
-			else:
-				hc.halt()
-			flywheelMode = not flywheelMode
-			fireMode = not fireMode
+		elif msg[0] == "setFiringMode":
+                    if msg[1][0]:
+                        flywheelMode = True
+                        fireMode = True
+			hc.start()
+		    else:
+                        flywheelMode = False
+                        fireMode = False
+			hc.halt()
 
 if __name__ == "__main__":
 

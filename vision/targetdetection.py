@@ -10,6 +10,7 @@ import sys, os
 #Load classifiers
 TARGET_CLASSIFIER = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_frontalface_default.xml")
 TARGET_CLASSIFIER1 = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_profileface.xml")
+MEDIC_CLASSIFIER = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_lowerbody.xml")
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -35,9 +36,12 @@ def detectTargets(grayscaleImage):
 
 def detectMedics(grayscaleImage):
 
+        """
 	medics, weights = hog.detectMultiScale(grayscaleImage, winStride=(4, 4), padding=(8,8), scale=1.05)
 	medics = np.array([[x, y, x + w, y + h] for (x, y, w, h) in medics])
 	medics = non_max_suppression_fast(medics, overlapThresh=0.65)
+        """
+        medics = MEDIC_CLASSIFIER.detectMultiScale(grayscaleImage, scaleFactor=1.3, minNeighbors=5, flags=0)
 
 	if isinstance(medics, tuple):
 		medics = np.array([])
@@ -47,8 +51,8 @@ def detectMedics(grayscaleImage):
 def detectRobots(colorImage):
 	global fgbg
 
-	fgmask = fgbg.apply(colorImage, learningRate = 1.0/30)
-	kernel = np.ones((10,10), np.uint8)
+	fgmask = fgbg.apply(colorImage, learningRate = 1.0/15)
+	kernel = np.ones((30,30), np.uint8)
 	erosion = cv2.erode(fgmask, kernel, iterations = 1)
 	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
 
@@ -58,9 +62,9 @@ def detectRobots(colorImage):
 	biggestContourArea = 0
 	for contour in contours:
 		area = cv2.contourArea(contour)
-		if area > biggestContourArea and area > 20:
+		if area > biggestContourArea and area > 50:
 			peri = cv2.arcLength(contour, True)
-			approx = cv2.approxPolyDP(contour, 0.000001*peri, True)
+			approx = cv2.approxPolyDP(contour, 0.01*peri, True)
 			biggestContour = approx
 			biggestContourArea = area
 
