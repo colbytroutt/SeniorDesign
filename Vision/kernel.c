@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-__device__ void drawLineInDirection(int *image, int width, int height, int pointX, int pointY, float slope, int lineSize, int isVertical, int direction, int initialValue, int dropOff, int everyPixel) {
+__device__ void drawLineInDirection(float *image, int width, int height, int pointX, int pointY, float slope, int lineSize, int isVertical, int direction, int lineLength) {
 
 	//keeps track of real values on line
 	float fX = (float)pointX;
@@ -14,9 +14,9 @@ __device__ void drawLineInDirection(int *image, int width, int height, int point
 	int thickX;
 	int thickY;
 	
-	int increaseValue = initialValue;
-	int count = everyPixel;
-
+	int lengthAway = 0;
+	float increaseValue;
+	
 	int directionFactor = 1;
 	if(direction != 0) {
 		directionFactor = -1;
@@ -41,7 +41,14 @@ __device__ void drawLineInDirection(int *image, int width, int height, int point
 	//printf("iY: %d\\n", iY);
 
 	//draw until line is out of bounds
-	while(iX >= 0 && iX < width && iY >= 0 && iY < height && increaseValue > 0) {
+	while(iX >= 0 && iX < width && iY >= 0 && iY < height) {
+		
+		lengthAway++;
+		increaseValue = 1 - 1/(1+expf(-lengthAway + lineLength));
+		
+		if (increaseValue < 0.05) {
+			break;
+		}
 		
 		//draws a thicker line
 		for(l=-lineSize/2; l<=lineSize/2; l++) {
@@ -67,12 +74,6 @@ __device__ void drawLineInDirection(int *image, int width, int height, int point
 			}
 		}
 		
-		if(count > 20) {
-			increaseValue -= dropOff;
-			count = 0;
-		}
-		count++;
-		
 		//determines next point of line
 		if(isVertical == 0) {
 			//printf("NOT VERTICAL\\n");
@@ -96,15 +97,15 @@ __device__ void drawLineInDirection(int *image, int width, int height, int point
 
 }
 
-__device__ void drawLine(int *image, int width, int height, int pointX, int pointY, float slope, int lineSize, int isVertical, int initialValue, int dropOff, int everyPixel) {
+__device__ void drawLine(float *image, int width, int height, int pointX, int pointY, float slope, int lineSize, int isVertical, int lineLength) {
 
 	//draw line forward
-	drawLineInDirection(image, width, height, pointX, pointY, slope, lineSize, isVertical, 0, initialValue, dropOff, everyPixel);
+	drawLineInDirection(image, width, height, pointX, pointY, slope, lineSize, isVertical, 0, lineLength);
 	//draw line backward
-	drawLineInDirection(image, width, height, pointX, pointY, slope, lineSize, isVertical, 1, initialValue, dropOff, everyPixel);
+	drawLineInDirection(image, width, height, pointX, pointY, slope, lineSize, isVertical, 1, lineLength);
 }
 
-__global__ void drawLines(int *newImage, float *hGradientImage, float *vGradientImage, int width, int height, float thresh, int lineSize, int initialValue, int dropOff, int everyPixel) {
+__global__ void drawLines(float *newImage, float *hGradientImage, float *vGradientImage, int width, int height, float thresh, int lineSize, int lineLength) {
 	
 	int idx = threadIdx.x + blockDim.x * blockIdx.x;
 	int idy = threadIdx.y + blockDim.y * blockIdx.y;
@@ -138,7 +139,7 @@ __global__ void drawLines(int *newImage, float *hGradientImage, float *vGradient
 		//draw vertical line
 		//printf("coords: %d %d\\n", idx, idy);
 		//printf("i: %d\\n", i);
-		drawLine(newImage, width, height, idx, idy, 0, lineSize, 1, initialValue, dropOff, everyPixel);
+		drawLine(newImage, width, height, idx, idy, 0, lineSize, 1, lineLength);
 		return;
 	}
 	
@@ -150,7 +151,7 @@ __global__ void drawLines(int *newImage, float *hGradientImage, float *vGradient
 	slope = vGradientImage[i]/hGradientImage[i];
 	
 	//printf("%f\n", slope); 
-	drawLine(newImage, width, height, idx, idy, slope, lineSize, 0, initialValue, dropOff, everyPixel);
+	drawLine(newImage, width, height, idx, idy, slope, lineSize, 0, lineLength);
 
 	//printf("%d %d: %d %d %f %f \\n", idx, idy, vGradientImage[i], hGradientImage[i], slope, round(3.8));
 }

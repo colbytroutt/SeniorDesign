@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<title>Video Feed</title>
+		<script
+  src="https://code.jquery.com/jquery-3.1.1.min.js"
+  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+  crossorigin="anonymous"></script>
+		
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+		
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		
+		<style>
+			body {
+				padding: 0;
+				margin: 0;
+			}
+			
+			#ItemPreview {
+				width: 80%;
+				height: 100%;
+				float: left;
+			}
+			
+			#info {
+				float: right;
+				padding: 10px;
+				width: 20%;
+				height: 100%;
+				color: rbg(0, 0, 0);
+			}
+			
+			#battery {
+				color: green;
+				position: absolute;
+				right: 35px;
+				top: 40px;
+				font-size: 4em;
+			}
+			
+			#ammocontainer {
+				text-align: center;
+				color: white;
+				position: absolute;
+				left: 17px;
+				top: 0;
+				width: 230px;
+				height: 260px;
+				background-color: rgb(39, 39, 39);
+			}
+			
+			#ammocontainer h1 {
+				font-size: 32pt;
+			}
+			
+			#ammocontainer .number {
+				font-size: 52pt;
+				padding: 0;
+				margin: 0;
+			}
+			
+			#ammocontainer .x {
+				font-size: 10pt;
+				margin: 10px;
+			}
+			
+			#ammocontainer img {
+				width: 50px;
+				height: 50px;
+			}
+			
+			#targetstatuscontainer {
+				text-align: center;
+				color: white;
+				position: absolute;
+				top: 0;
+				left: 50%;
+				margin-left: -112px;
+				width: 224px;
+				height: 135px;
+				background-color: rgb(39, 39, 39);
+			}
+			
+			#targetstatuscontainer p {
+				font-size: 72pt;
+			}
+			
+			#optionsbutton {
+				text-align: center;
+				color: black;
+				position: absolute;
+				bottom: 10px;
+				left: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<img id="ItemPreview" src="" />
+		<div id="info">
+			<span id="battery" class="fa fa-battery-full" data-toggle="tooltip" title="100%"></span>
+			<div id="ammocontainer">
+				<h1>Ammo</h1>
+				<div class="ammo-row">
+					<div class="number">63</div>
+					<div class="x">x</div>
+					<img src="#" /></p>
+				<div>
+				<div class="ammo-row">
+					<div class="number">5</div>
+					<div class="x">x</div>
+					<img src="#" /></p>
+				<div>
+			</div>
+			<div id="targetstatuscontainer">
+				<h1>Targeting</h1>
+				<p>OFF</p>
+			</div>
+			<button id="optionsbutton" />
+		</div>
+	</body>
+</html>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    
+	/*
+	var socket = new io.connect('ws://localhost:8888/websocket'); 
+
+    // Add a connect listener
+    socket.on('connect',function() {
+      console.log("Connected!");
+    });
+    // Add a connect listener
+    socket.on('message',function(data) {
+      //document.getElementById("ItemPreview").src = "data:image/png;base64," + data;
+    });
+    // Add a disconnect listener
+    socket.on('disconnect',function() {
+      console.log('The client has disconnected!');
+    });
+	*/
+	
+	var ws = new WebSocket("ws://localhost:8888/websocket");
+	ws.onopen = function() {
+	   console.log("Connected!");
+	};
+	ws.onmessage = function(evt) {
+	   //jsonData = JSON.parse(evt.data);
+	   document.getElementById("ItemPreview").src = "data:image/png;base64," + evt.data;
+	};
+</script>

@@ -23,7 +23,7 @@ def filterTargets(grayscaleImage, (targets, medics, robots)):
 	
 def detectBorder(grayscaleImage):
 	
-	linesImage = hammLines(grayscaleImage, thresh = 5.1, lineSize = 1, initialValue = 10, dropOff = 6, everyPixel = 5)
+	linesImage = hammLines(grayscaleImage, thresh = 5.1, lineSize = 1, lineLength = 5)
 	#linesImage = houghLines(grayscaleImage)
 	
 	image, contours, hierarchy = cv2.findContours(numpy.copy(linesImage), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -49,7 +49,7 @@ def detectBorder(grayscaleImage):
 def houghLines(grayscaleImage):
 
 	edges = cv2.Canny(grayscaleImage, 66, 133, apertureSize=3)
-	
+	"""
 	borderImage = numpy.zeros_like(grayscaleImage)
 	
 	lines = cv2.HoughLines(edges,1,numpy.pi/180, 100)
@@ -68,6 +68,7 @@ def houghLines(grayscaleImage):
 			cv2.line(borderImage,(x1,y1),(x2,y2),255,2)
 	
 	"""
+	"""
 	lines = cv2.HoughLinesP(edges, 1, numpy.pi/180, 50, None, 1, 50)
 
 	N = lines.shape[0]
@@ -79,10 +80,11 @@ def houghLines(grayscaleImage):
 		cv2.line(borderImage,(x1,y1),(x2,y2),(255,0,0),2)
 	"""
 	
-	return borderImage
+	#return borderImage
+	return edges
 	
 #TODO: FIX MAGIC NUMBERS
-def hammLines(grayscaleImage, thresh, lineSize, initialValue, dropOff, everyPixel):
+def hammLines(grayscaleImage, thresh, lineSize, lineLength):
 	
 	#create kernels using gaussian derivatives
 	sigma = 3
@@ -104,7 +106,7 @@ def hammLines(grayscaleImage, thresh, lineSize, initialValue, dropOff, everyPixe
 
 	drawLines = mod.get_function("drawLines")
 	
-	filteredImage = numpy.zeros_like(horizontalImage).astype(numpy.int32)
+	filteredImage = numpy.zeros_like(horizontalImage)
 	
 	dx, mx = divmod(horizontalImage.shape[1], BLOCK_SIZE[0])
 	dy, my = divmod(horizontalImage.shape[0], BLOCK_SIZE[1])
@@ -118,16 +120,14 @@ def hammLines(grayscaleImage, thresh, lineSize, initialValue, dropOff, everyPixe
 		numpy.int32(horizontalImage.shape[0]),
 		numpy.float32(thresh),
 		numpy.int32(lineSize),
-		numpy.int32(initialValue),
-		numpy.int32(dropOff),
-		numpy.int32(everyPixel),
+		numpy.int32(lineLength),
 		grid=(gridSize[0] + (mx>0), gridSize[1] + (my>0)),
 		block=(BLOCK_SIZE[0], BLOCK_SIZE[1], 1))
 	
 	cv2.normalize(filteredImage, filteredImage, 0, 255, cv2.NORM_MINMAX)
 	
 	minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(filteredImage)
-	thresh = 25
+	thresh = 200
 	low_values_indices = filteredImage < (thresh)  # Where values are low
 	##print filteredImage
 	high_values_indices = filteredImage >= (thresh)  # Where values are low
@@ -137,4 +137,6 @@ def hammLines(grayscaleImage, thresh, lineSize, initialValue, dropOff, everyPixe
 	#filteredImage = (filteredImage / maxVal) * 255
 	#print maxVal
 	
-	return cv2.Canny(filteredImage.astype(numpy.uint8), 50, 50, apertureSize=3)
+	return filteredImage.astype(numpy.uint8)
+	#return verticalImage.astype(numpy.uint8)
+	#return cv2.Canny(filteredImage.astype(numpy.uint8), 50, 50, apertureSize=3)
