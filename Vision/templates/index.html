@@ -24,7 +24,7 @@
 			}
 			
 			#ItemPreview {
-				width: 80%;
+				width: 100%;
 				height: 100%;
 				float: left;
 			}
@@ -38,11 +38,11 @@
 			}
 			
 			#battery {
-				color: green;
 				position: absolute;
 				right: 35px;
-				top: 40px;
+				top: 10px;
 				font-size: 4em;
+				color: green;
 			}
 			
 			#ammocontainer {
@@ -51,29 +51,38 @@
 				position: absolute;
 				left: 17px;
 				top: 0;
-				width: 230px;
-				height: 260px;
-				background-color: rgb(39, 39, 39);
+				width: 200px;
+				height: 240px;
+				background-color: rgba(39, 39, 39, 0.8);
 			}
 			
 			#ammocontainer h1 {
-				font-size: 32pt;
+				font-size: 25pt;
 			}
 			
-			#ammocontainer .number {
+			#ammocontainer table {
+				width: 100%;
+			}
+			
+			#ammocontainer table tr .number {
+				text-align: right;
+				width: 50%;
+				color: white;
 				font-size: 52pt;
-				padding: 0;
-				margin: 0;
 			}
 			
-			#ammocontainer .x {
-				font-size: 10pt;
-				margin: 10px;
+			#ammocontainer table tr .x {
+				text-align: center;
+				width: 20%;
+				color: white;
+				font-size: 20pt;
+				vertical-align: bottom;
+				padding-bottom: 15px;
 			}
 			
-			#ammocontainer img {
-				width: 50px;
-				height: 50px;
+			#ammocontainer table tr .image {
+				text-align: center;
+				color: white;
 			}
 			
 			#targetstatuscontainer {
@@ -84,46 +93,58 @@
 				left: 50%;
 				margin-left: -112px;
 				width: 224px;
-				height: 135px;
-				background-color: rgb(39, 39, 39);
+				height: 100px;
+				background-color: rgba(39, 39, 39, 0.8);
 			}
 			
-			#targetstatuscontainer p {
-				font-size: 72pt;
+			#targetstatuscontainer h1 {
+				font-size: 22pt;
+				padding: 0;
+				margin-top: 10px;
+			}
+			
+			#targetstatuscontainer h2 {
+				font-size: 30pt;
+				color: red;
+				padding: 0;
+				margin: 0;
 			}
 			
 			#optionsbutton {
 				text-align: center;
+				background-color: white;
 				color: black;
 				position: absolute;
 				bottom: 10px;
 				left: 10px;
+				text-size: 20pt;
+				padding: 5px;
 			}
 		</style>
 	</head>
 	<body>
 		<img id="ItemPreview" src="" />
-		<div id="info">
-			<span id="battery" class="fa fa-battery-full" data-toggle="tooltip" title="100%"></span>
-			<div id="ammocontainer">
-				<h1>Ammo</h1>
-				<div class="ammo-row">
-					<div class="number">63</div>
-					<div class="x">x</div>
-					<img src="#" /></p>
-				<div>
-				<div class="ammo-row">
-					<div class="number">5</div>
-					<div class="x">x</div>
-					<img src="#" /></p>
-				<div>
-			</div>
-			<div id="targetstatuscontainer">
-				<h1>Targeting</h1>
-				<p>OFF</p>
-			</div>
-			<button id="optionsbutton" />
+		<span id="battery" class="fa fa-battery-full" data-toggle="tooltip" title="100%"></span>
+		<div id="ammocontainer" class="container">
+			<h1>Ammo</h1>
+			<table>
+				<tr>
+					<td class="number">63</td>
+					<td class="x">x</td>
+					<td class="image"><img src="dart.png" /></td>
+				</tr>
+				<tr>
+					<td class="number">5</td>
+					<td class="x">x</td>
+					<td class="image"><img src="ball.png" /></td>
+				</tr>
+			</table>
 		</div>
+		<div id="targetstatuscontainer">
+			<h1>Targeting</h1>
+			<h2>OFF</h2>
+		</div>
+		<button type="button" class="btn btn-primary" id="optionsbutton">Options</button>
 	</body>
 </html>
 

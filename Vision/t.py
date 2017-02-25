@@ -30,7 +30,8 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 def make_app():
 	return tornado.web.Application([
 		(r"/", MainHandler),
-		(r"/websocket", SocketHandler)
+		(r"/websocket", SocketHandler),
+		(r"/(.*)", tornado.web.StaticFileHandler, {'path':'./templates'})
 	])
 	
 def broadCastMessage(data):

@@ -55,7 +55,7 @@ if __name__ == "__main__":
 	
 		#Camera feed
 		ret, image = cap.read()
-		image = cv2.resize(image, (200, 200))
+		image = cv2.resize(image, (400, 200))
 		#grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		
 		#Find Targets
