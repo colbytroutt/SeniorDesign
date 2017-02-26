@@ -44,3 +44,9 @@ def startServer():
 	app.listen(8888)
 	thread.start_new_thread(tornado.ioloop.IOLoop.current().start, ())
 	
+if __name__ == "__main__":
+	import time
+	startServer()
+	while True:
+		time.sleep(1000)
+		pass

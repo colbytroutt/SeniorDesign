@@ -9,6 +9,7 @@ import json
 import targetdetection
 import targetfilterer
 import base64
+import random
 
 TARGET_COLOR_BGR = (0, 0, 255)
 MEDIC_COLOR_BGR = (255, 0, 0)
@@ -51,24 +52,31 @@ if __name__ == "__main__":
 	targetAverageTime = 0
 	medicAverageTime = 0
 	
+	#networked variables
+	dartAmmo = 54
+	ballAmmo = 3
+	targetStatus = "OFF"
+	
+	random.seed(None)
+	
 	while(True):
 	
 		#Camera feed
 		ret, image = cap.read()
-		image = cv2.resize(image, (400, 200))
-		#grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+		image = cv2.resize(image, (400, 300))
+		grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		
 		#Find Targets
 		start = timer()
-		#targets = targetdetection.detectTargets(grayscaleImage)
-		targets = []
+		targets = targetdetection.detectTargets(grayscaleImage)
+		#targets = []
 		end = timer()
 		targetAverageTime+=(end-start)*1000
 				
 		#Find Medics
 		start = timer()
-		#medics = targetdetection.detectMedics(grayscaleImage)
-		medics = []
+		medics = targetdetection.detectMedics(grayscaleImage)
+		#medics = []
 		end = timer()
 		medicAverageTime+=(end-start)*1000
 		
@@ -79,7 +87,7 @@ if __name__ == "__main__":
 		#(targets, medics, robots) = filterer.filterTargets(grayscaleImage, (targets, medics, robots))
 		
 		#just for testing
-		#borderImage = numpy.copy(image)
+		borderImage = numpy.copy(image)
 		#border = targetfilterer.detectBorder(grayscaleImage)
 		#cv2.drawContours(borderImage, [border],-1,(0,0,255),2)
 		
@@ -87,7 +95,7 @@ if __name__ == "__main__":
 		#linesImage = targetfilterer.houghLines(grayscaleImage)
 		
 		#Draw boundin boxes on targets
-		#borderImage = drawTargets(borderImage, (targets, medics, robots))
+		borderImage = drawTargets(borderImage, (targets, medics, robots))
 		
 		#test
 		"""
@@ -116,14 +124,22 @@ if __name__ == "__main__":
 		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)		
 		"""
 		
-		ret, png = cv2.imencode('.png', image)
+		dartAmmo = random.randint(0, 100)
+		ballAmmo = random.randint(0, 100)
+
+		ret, png = cv2.imencode('.png', borderImage)
 		
-		#data = {}
-		#data['image'] = base64.b64encode(png)
+		data = {}
+		data["image"] = base64.b64encode(png)
+		data["dartAmmo"] = dartAmmo
+		data["ballAmmo"] = ballAmmo
+		data["targetStatus"] = targetStatus
+		
+		data = json.dumps(data, separators=(',',':'))
 		
 		#show image
-		t.broadCastMessage(base64.b64encode(png))
-		#cv2.imshow('Detection', edges)
+		t.broadCastMessage(data)
+		#cv2.imshow('Detection', borderImage)
 		#cv2.imshow('Capture', image)
 		
 		if(timer() - fpsTimer > 1):
