@@ -4,7 +4,7 @@ import math
 import os
 from timeit import default_timer as timer
 
-import t
+import vc
 import json
 import targetdetection
 import targetfilterer
@@ -39,7 +39,7 @@ def drawTargets(image, (targets, medics, robots)):
 	
 if __name__ == "__main__":
 	
-	t.startServer()
+	vc.startServer()
 	
 	#Camera feed
 	cap = cv2.VideoCapture(0)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
 		data = json.dumps(data, separators=(',',':'))
 		
 		#show image
-		t.broadCastMessage(data)
+		vc.broadCastMessage(data)
 		#cv2.imshow('Detection', borderImage)
 		#cv2.imshow('Capture', image)
 		
