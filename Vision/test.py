@@ -44,6 +44,10 @@ if __name__ == "__main__":
 	#Camera feed
 	cap = cv2.VideoCapture(0)
 	
+	cap.set(3,1920);
+	cap.set(4,1080);
+	cap.set(5, 30);
+	
 	#Image feed
 	#image = cv2.imread('bigTest.png')
 
@@ -63,13 +67,12 @@ if __name__ == "__main__":
 	
 		#Camera feed
 		ret, image = cap.read()
-		image = cv2.resize(image, (400, 300))
 		grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		
 		#Find Targets
 		start = timer()
-		targets = targetdetection.detectTargets(grayscaleImage)
-		#targets = []
+		#targets = targetdetection.detectTargets(grayscaleImage)
+		targets = []
 		end = timer()
 		targetAverageTime+=(end-start)*1000
 				
@@ -96,6 +99,7 @@ if __name__ == "__main__":
 		
 		#Draw boundin boxes on targets
 		borderImage = drawTargets(borderImage, (targets, medics, robots))
+		#borderImage = cv2.resize(borderImage, (400, 300))
 		
 		#test
 		"""
@@ -127,6 +131,7 @@ if __name__ == "__main__":
 		dartAmmo = random.randint(0, 100)
 		ballAmmo = random.randint(0, 100)
 
+		"""
 		ret, png = cv2.imencode('.png', borderImage)
 		
 		data = {}
@@ -136,19 +141,24 @@ if __name__ == "__main__":
 		data["targetStatus"] = targetStatus
 		
 		data = json.dumps(data, separators=(',',':'))
+		"""
 		
 		#show image
-		vc.broadCastMessage(data)
-		#cv2.imshow('Detection', borderImage)
+		#vc.broadCastMessage(data)
+		#cv2.imshow('Target Detection', borderImage)
+		cv2.imshow('Medic Detection', borderImage)
 		#cv2.imshow('Capture', image)
 		
 		if(timer() - fpsTimer > 1):
 			fpsTimer = timer()
 			os.system('cls')
-			print("TargetDetection: ")
-			print(str(targetAverageTime/count) + " ms")
-			print("MedicDetection: ")
-			print(str(medicAverageTime/count) + " ms")
+			
+			if(count != 0):
+				print("TargetDetection: ")
+				print(str(targetAverageTime/count) + " ms")
+				print("MedicDetection: ")
+				print(str(medicAverageTime/count) + " ms")
+				
 			print("FPS: ")
 			print(count)
 			
