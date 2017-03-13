@@ -7,21 +7,48 @@ from timeit import default_timer as timer
 import vc
 import json
 import targetdetection
-import targetfilterer
+import prioritization
 import base64
 import random
+import controller
 
 TARGET_COLOR_BGR = (0, 0, 255)
 MEDIC_COLOR_BGR = (255, 0, 0)
 ROBOT_COLOR_BGR = (0, 255, 0)
 
-CAMERA_FOV = 70
+CAMERA_FOV = 30
 
-def aimCamera(x, width):
-	yaw = (-CAMERA_FOV/2) + ((x/width)*CAMERA_FOV)  
-	#aimCameraOnArduino(yaw)
-	prioritization.updateTurningMemory(yaw)
+DELAY_PER_ANGLE = .2
+lastAimCamera = timer()
+expectedTurretDelay = 0
+
+def fire():
+	return
+
+def aimCamera(x, y, imageWidth, imageHeight):
+
+	global DELAY_PER_ANGLE
+	global lastAimCamera
+	global expectedTurretDelay
+
+	timeElapsed = timer() - lastAimCamera
+	if(timeElapsed > expectedTurretDelay):
+	
+		yaw = (x - (imageWidth/2))*(float(CAMERA_FOV)/imageWidth)
+		pitch = (y - (imageHeight/2))*(float(CAMERA_FOV)/imageHeight)
+	
+		if abs(yaw) > 2: 
+			lastAimCamera = timer()
+			expectedTurretDelay = yaw*DELAY_PER_ANGLE
+			controller.aim(yaw, pitch)
 		
+		print "x: " + str(x)
+		print "y: " + str(y)
+		print "yaw: " + str(yaw)
+		print "pitch: " + str(pitch)
+		
+		#prioritization.updateTurningMemory(yaw)
+	
 def getDistance(x, y):
 	return 0
 
@@ -39,14 +66,15 @@ def drawTargets(image, (targets, medics, robots)):
 	
 if __name__ == "__main__":
 	
-	vc.startServer()
+	#vc.startServer()
 	
 	#Camera feed
 	cap = cv2.VideoCapture(0)
 	
-	cap.set(3,1920);
-	cap.set(4,1080);
-	cap.set(5, 30);
+	cap.set(3, 1024);
+	cap.set(4, 720);	
+	cap.set(cv2.cv.CV_CAP_PROP_FPS, 30)
+	print cap.get(cv2.cv.CV_CAP_PROP_FPS)
 	
 	#Image feed
 	#image = cv2.imread('bigTest.png')
@@ -63,6 +91,8 @@ if __name__ == "__main__":
 	
 	random.seed(None)
 	
+	#targetdetection.initParallelization()
+	
 	while(True):
 	
 		#Camera feed
@@ -70,27 +100,36 @@ if __name__ == "__main__":
 		grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 		
 		#Find Targets
+		
 		start = timer()
-		#targets = targetdetection.detectTargets(grayscaleImage)
-		targets = []
+		targets = targetdetection.detectTargets(grayscaleImage)
 		end = timer()
 		targetAverageTime+=(end-start)*1000
 				
 		#Find Medics
 		start = timer()
 		medics = targetdetection.detectMedics(grayscaleImage)
-		#medics = []
 		end = timer()
 		medicAverageTime+=(end-start)*1000
 		
 		#Find Robots
-		#robots = targetdetection.detectRobots(grayscaleImage)
-		robots = []
+		robots = targetdetection.detectRobots(grayscaleImage)
+		
+		
+		"""
+		start = timer()
+		(targets, medics, robots) = targetdetection.detectAllTargetsParallel(grayscaleImage)
+		end = timer()
+		targetAverageTime+=(end-start)*1000
+		"""
+		
+		#targets = numpy.array([])
+		#medics = numpy.array([])
+		#robots = numpy.array([])
 		
 		#(targets, medics, robots) = filterer.filterTargets(grayscaleImage, (targets, medics, robots))
 		
 		#just for testing
-		borderImage = numpy.copy(image)
 		#border = targetfilterer.detectBorder(grayscaleImage)
 		#cv2.drawContours(borderImage, [border],-1,(0,0,255),2)
 		
@@ -98,8 +137,7 @@ if __name__ == "__main__":
 		#linesImage = targetfilterer.houghLines(grayscaleImage)
 		
 		#Draw boundin boxes on targets
-		borderImage = drawTargets(borderImage, (targets, medics, robots))
-		#borderImage = cv2.resize(borderImage, (400, 300))
+		image = drawTargets(image, (targets, medics, robots))
 		
 		#test
 		"""
@@ -128,10 +166,20 @@ if __name__ == "__main__":
 		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)		
 		"""
 		
+		targetToFire = prioritization.priotize((targets, medics, robots))
+		if targetToFire != None:
+			(x, y, width, height) = targetToFire
+			aimCamera(x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0])
+			#fire()
+		
+		cv2.imshow('Capture', image)
+		
+		"""
+		borderImage = cv2.resize(borderImage, (400, 300))
+		
 		dartAmmo = random.randint(0, 100)
 		ballAmmo = random.randint(0, 100)
 
-		"""
 		ret, png = cv2.imencode('.png', borderImage)
 		
 		data = {}
@@ -141,14 +189,9 @@ if __name__ == "__main__":
 		data["targetStatus"] = targetStatus
 		
 		data = json.dumps(data, separators=(',',':'))
+		
+		vc.broadCastMessage(data)
 		"""
-		
-		#show image
-		#vc.broadCastMessage(data)
-		#cv2.imshow('Target Detection', borderImage)
-		cv2.imshow('Medic Detection', borderImage)
-		#cv2.imshow('Capture', image)
-		
 		if(timer() - fpsTimer > 1):
 			fpsTimer = timer()
 			os.system('cls')
@@ -171,6 +214,7 @@ if __name__ == "__main__":
 		
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break
-			
+		
+	targetdetection.destroyThreads()
 	cap.release()
 	cv2.destroyAllWindows()

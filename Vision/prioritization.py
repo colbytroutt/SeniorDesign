@@ -1,5 +1,4 @@
 import numpy
-import test
 
 targetMemory = []
 
@@ -25,10 +24,23 @@ def updateMovingMemory(xTranslation, yTranslation, zTranslation):
 	for i in range(len(targetMemory)):
 		((x, y, z), count) = targetMemory[i]
 		translatedCoords = numpy.dot(numpy.array(translationMatrix), numpy.array([x, y, z]))
-		targetMemory[i] = ((translatedCoords[0], translatedCoords[1], translatedCoords[2]), count))
+		targetMemory[i] = ((translatedCoords[0], translatedCoords[1], translatedCoords[2]), count)
 
 
 def priotize((targets, medics, robots)):
+	
+	if medics.size > 0:
+		return medics[0]
+		
+	if robots.size > 0:
+		return robots[0]
+	
+	if targets.size > 0:
+		return targets[0]
+	
+	return None
+		
+def track((targets, medics, robots)):
 	refinedTargets = []
 	
 	wasInThere = False
@@ -38,7 +50,7 @@ def priotize((targets, medics, robots)):
 		y = sy + h/2
 		z = test.getDistance(x, y)
 		
-		for i  in range(len(targetMemory))
+		for i in range(len(targetMemory)):
 			((tmX, tmY), count) = targetMemory[i] 
 			if tmX == x and tmY == y:
 				wasInThere = True
@@ -51,15 +63,3 @@ def priotize((targets, medics, robots)):
 			refinedTargets.append(sx, sy, w, h)
 
 	return refinedTargets
-
-def drawTargets(image, (targets, medics, robots)):
-	for (x,y,w,h) in targets:
-		cv2.rectangle(image, (x,y), (x+w,y+h), TARGET_COLOR_BGR, 2)
-	
-	for (x,y,w,h) in medics:
-		cv2.rectangle(image, (x,y), (x+w,y+h), MEDIC_COLOR_BGR, 2)
-		
-	for (x,y,w,h) in robots:
-		cv2.rectangle(image, (x,y), (x+w,y+h), ROBOT_COLOR_BGR, 2)
-	
-	return image
