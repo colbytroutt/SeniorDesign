@@ -10,7 +10,7 @@
 /* Define available CmdMessenger commands */
 enum {
     aim,
-    t,
+    fire,
     error,
 };
 
@@ -23,8 +23,6 @@ const int BAUD_RATE = 9600;
 CmdMessenger messenger = CmdMessenger(Serial,',',';','/');
 
 /* Create callback functions to deal with incoming messages */
-
-/* callback */
 void onAim(void){
 
     int yaw = messenger.readBinArg<int>();
@@ -52,6 +50,10 @@ void onAim(void){
     currentPitch = absolutePitch;
 }
 
+void onFire(void) {
+  
+}
+
 /* callback */
 void on_unknown_command(void){
     messenger.sendCmd(error,"Command without callback.");
@@ -60,6 +62,7 @@ void on_unknown_command(void){
 /* Attach callbacks for CmdMessenger commands */
 void attach_callbacks(void) { 
     messenger.attach(aim, onAim);
+    messenger.attach(fire, onFire);
     messenger.attach(on_unknown_command);
 }
 
