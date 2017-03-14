@@ -36,13 +36,13 @@ void onAim(void){
     if(absoluteYaw > 180) {
       absoluteYaw = 180;
     } else if(absoluteYaw < 0) {
-      absoluteYaw = 180;
+      absoluteYaw = 0;
     }
 
     if(absolutePitch > 40) {
-      absolutePitch = 180;
+      absolutePitch = 40;
     } else if(absolutePitch < 0) {
-      absolutePitch = 180;
+      absolutePitch = 0;
     }
     
     yawServo.write(absoluteYaw);

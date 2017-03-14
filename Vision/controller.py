@@ -19,5 +19,5 @@ if __name__ == "__main__":
 		except ValueError:
 			print "Not a number"
 		
-		aim(0, number)
+		aim(number, 0)
 	
