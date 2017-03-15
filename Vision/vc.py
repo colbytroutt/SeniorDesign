@@ -36,6 +36,8 @@ def make_app():
 	
 def broadCastMessage(data):
 	global clients
+
+
 	for client in clients:
 		client.write_message(data)
 

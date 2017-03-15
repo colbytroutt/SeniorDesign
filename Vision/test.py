@@ -12,7 +12,7 @@ import base64
 import random
 import threading
 import time
-import hardwarecontroller as hc
+#import hardwarecontroller as hc
 
 TARGET_COLOR_BGR = (0, 0, 255)
 MEDIC_COLOR_BGR = (255, 0, 0)
@@ -22,8 +22,9 @@ CAMERA_FOV = 30
 
 DELAY_PER_ANGLE = .2
 
+
 def fire():
-	hc.fire()
+#	hc.fire()
 	time.sleep(0)
 		
 def aim(x, y, imageWidth, imageHeight):
@@ -40,7 +41,7 @@ def aim(x, y, imageWidth, imageHeight):
 	if abs(pitch) < 2:
 		pitch = 0
 	
-	hc.aim(yaw, pitch)
+#	hc.aim(yaw, pitch)
 	time.sleep(DELAY_PER_ANGLE*max(abs(yaw), abs(pitch)))
 	#prioritization.updateTurningMemory(yaw)
 
@@ -48,7 +49,8 @@ def aim(x, y, imageWidth, imageHeight):
 def foo(x, y, imageWidth, imageHeight):
 	aim(x, y, imageWidth, imageHeight)
 	fire()
-	
+
+
 def getDistance(x, y):
 	return 0
 
@@ -61,13 +63,12 @@ def drawTargets(image, (targets, medics, robots)):
 		
 	for (x,y,w,h) in robots:
 		cv2.rectangle(image, (x,y), (x+w,y+h), ROBOT_COLOR_BGR, 2)
-	
 
 	return image
 	
 if __name__ == "__main__":
 	
-	#vc.startServer()
+	vc.startServer()
 	
 	#Camera feed
 	cap = cv2.VideoCapture(0)
@@ -81,13 +82,13 @@ if __name__ == "__main__":
 	#image = cv2.imread('bigTest.png')
 
 	fpsTimer = timer()
-	count = 0
+	fpsCount = 0
 	targetAverageTime = 0
 	medicAverageTime = 0
 	
 	#networked variables
-	dartAmmo = 54
-	ballAmmo = 3
+	dartAmmo = 20
+	ballAmmo = 25
 	targetStatus = "OFF"
 	
 	random.seed(None)
@@ -166,9 +167,9 @@ if __name__ == "__main__":
 				biggestContour = approx
 				biggestContourArea = area
 		
-		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)		
+		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)
 		"""
-		
+
 		targetToFire = prioritization.priotize((targets, medics, robots))
 		if targetToFire != None:
 			(x, y, width, height) = targetToFire
@@ -176,45 +177,42 @@ if __name__ == "__main__":
 				t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0]))
 				t.start()
 		
-		cv2.imshow('Capture', image)
-		
-		"""
-		borderImage = cv2.resize(borderImage, (400, 300))
-		
-		dartAmmo = random.randint(0, 100)
-		ballAmmo = random.randint(0, 100)
+		#cv2.imshow('Capture', image)
 
-		ret, png = cv2.imencode('.png', borderImage)
+
+		image = cv2.resize(image, (400, 300))
+
+		ret, png = cv2.imencode('.png', image)
 		
 		data = {}
 		data["image"] = base64.b64encode(png)
 		data["dartAmmo"] = dartAmmo
 		data["ballAmmo"] = ballAmmo
 		data["targetStatus"] = targetStatus
-		
+
 		data = json.dumps(data, separators=(',',':'))
 		
 		vc.broadCastMessage(data)
-		"""
+
 		if(timer() - fpsTimer > 1):
 			fpsTimer = timer()
 			os.system('cls')
 			
-			if(count != 0):
+			if(fpsCount != 0):
 				print("TargetDetection: ")
-				print(str(targetAverageTime/count) + " ms")
+				print(str(targetAverageTime/fpsCount) + " ms")
 				print("MedicDetection: ")
-				print(str(medicAverageTime/count) + " ms")
+				print(str(medicAverageTime/fpsCount) + " ms")
 				
 			print("FPS: ")
-			print(count)
+			print(fpsCount)
 			
 			#reset stuff
 			targetAverageTime = 0
 			medicAverageTime = 0
-			count = 0
+			fpsCount = 0
 		else:
-			count+=1
+			fpsCount+=1
 		
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break
