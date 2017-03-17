@@ -7,11 +7,19 @@
 #include <Math.h>
 #include "CmdMessenger.h"
 
+#define SERVO_ONE 3
+#define SERVO_TWO 9
+#define TRIGGER_ONE 4
+#define TRIGGER_TWO 8
+#define FLY_ONE 2
+#define FLY_TWO 7
+
 /* Define available CmdMessenger commands */
 enum {
     aim,
     fire,
     error,
+    halt,
 };
 
 Servo yawServo;
@@ -21,6 +29,11 @@ int currentPitch = 20;
 
 const int BAUD_RATE = 9600;
 CmdMessenger messenger = CmdMessenger(Serial,',',';','/');
+
+void onHalt(void) {
+    digitalWrite(FLY_ONE, LOW);
+    digitalWrite(FLY_TWO, LOW);
+}
 
 /* Create callback functions to deal with incoming messages */
 void onAim(void){
@@ -51,7 +64,11 @@ void onAim(void){
 }
 
 void onFire(void) {
-  
+    digitalWrite(TRIGGER_ONE, HIGH);
+    digitalWrite(TRIGGER_TWO, HIGH);
+    delay(1000);
+    digitalWrite(TRIGGER_ONE, LOW);
+    digitalWrite(TRIGGER_TWO, LOW);
 }
 
 /* callback */
@@ -64,15 +81,22 @@ void attach_callbacks(void) {
     messenger.attach(aim, onAim);
     messenger.attach(fire, onFire);
     messenger.attach(on_unknown_command);
+    messenger.attach(halt, onHalt);
 }
 
 void setup() {
     Serial.begin(BAUD_RATE);
     attach_callbacks();
-    yawServo.attach(9);
+    yawServo.attach(SERVO_ONE);
     yawServo.write(currentYaw);
-    pitchServo.attach(10);
+    pitchServo.attach(SERVO_TWO);
     pitchServo.write(currentPitch);
+    pinMode(FLY_ONE, OUTPUT);
+    pinMode(FLY_TWO, OUTPUT);
+    digitalWrite(FLY_ONE, HIGH);
+    digitalWrite(FLY_ONE, HIGH);
+    pinMode(TRIGGER_ONE, OUTPUT);
+    pinMode(TRIGGER_TWO, OUTPUT);
 }
 
 void loop() {
