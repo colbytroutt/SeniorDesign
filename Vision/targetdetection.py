@@ -4,10 +4,12 @@ import threading
 from multiprocessing import Process, Queue, Lock
 import multiprocessing
 import robot
+from nms import non_max_suppression_fast
+
 #Load classifiers
 TARGET_CLASSIFIER = cv2.CascadeClassifier("HaarCascades/haarcascade_frontalface_default.xml")
 TARGET_CLASSIFIER1 = cv2.CascadeClassifier("HaarCascades/haarcascade_profileface.xml")
-MEDIC_CLASSIFIER = cv2.CascadeClassifier("HaarCascades/hogcascade_pedestrians.xml")
+#MEDIC_CLASSIFIER = cv2.CascadeClassifier("HaarCascades/hogcascade_pedestrians.xml")
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -21,20 +23,22 @@ def initializeRobot():
 
 def detectTargets(grayscaleImage):
 
-	targets = TARGET_CLASSIFIER.detectMultiScale(grayscaleImage, None, None, scaleFactor=1.3, minNeighbors =5, flags=0, maxSize =(50, 50))
+	targets = TARGET_CLASSIFIER.detectMultiScale(grayscaleImage, scaleFactor=1.3, minNeighbors =5, flags=0, minSize =(50, 50))
 
 	if isinstance(targets, tuple):
-		targets = numpy.array([])
+	    targets = numpy.array([])
 
 	return targets
 
 def detectMedics(grayscaleImage):
 
-	medics = MEDIC_CLASSIFIER.detectMultiScale(grayscaleImage, None, None, scaleFactor=1.3, minNeighbors =5, flags=0, maxSize =(50, 100))
-	#medics = numpy.array([])
+	#medics = MEDIC_CLASSIFIER.detectMultiScale(grayscaleImage, None, None, scaleFactor=1.3, minNeighbors =5, flags=0, maxSize =(50, 100))
+        medics, weights = hog.detectMultiScale(grayscaleImage, winStride=(4, 4), padding=(8,8), scale=1.05)
+        medics = numpy.array([[x, y, x + w, y + h] for (x, y, w, h) in medics])
+        medics = non_max_suppression_fast(medics, overlapThresh=0.65)
 
-	if isinstance(medics, tuple):
-		medics = numpy.array([])
+	#if isinstance(medics, tuple):
+	#	medics = numpy.array([])
 
 	return medics
 

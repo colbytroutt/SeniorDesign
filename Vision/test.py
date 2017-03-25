@@ -12,7 +12,7 @@ import base64
 import random
 import threading
 import time
-import hardwarecontroller as hc
+#import hardwarecontroller as hc
 
 TARGET_COLOR_BGR = (0, 0, 255)
 MEDIC_COLOR_BGR = (255, 0, 0)
@@ -24,7 +24,7 @@ DELAY_PER_ANGLE = .2
 
 
 def fire():
-	hc.fire()
+#	hc.fire()
 	time.sleep(0)
 
 def aim(x, y, imageWidth, imageHeight):
@@ -41,7 +41,7 @@ def aim(x, y, imageWidth, imageHeight):
 	if abs(pitch) < 2:
 		pitch = 0
 
-	hc.aim(yaw, pitch)
+#	hc.aim(yaw, pitch)
 	time.sleep(DELAY_PER_ANGLE*max(abs(yaw), abs(pitch)))
 	#prioritization.updateTurningMemory(yaw)
 
@@ -69,15 +69,15 @@ def drawTargets(image, (targets, medics, robots)):
 if __name__ == "__main__":
 
 	vc.startServer()
-        targetdetection.initializeRobot()
+        #targetdetection.initializeRobot()
 
 	#Camera feed
 	cap = cv2.VideoCapture(0)
 
 	cap.set(3, 1024);
 	cap.set(4, 720);
-	cap.set(cv2.cv.CV_CAP_PROP_FPS, 30)
-	print cap.get(cv2.cv.CV_CAP_PROP_FPS)
+	#cap.set(cv2.cv.CV_CAP_PROP_FPS, 30)
+	#print cap.get(cv2.cv.CV_CAP_PROP_FPS)
 
 	#Image feed
 	#image = cv2.imread('bigTest.png')
@@ -114,11 +114,12 @@ if __name__ == "__main__":
 		#Find Medics
 		start = timer()
 		medics = targetdetection.detectMedics(grayscaleImage)
-		end = timer()
+
+                end = timer()
 		medicAverageTime+=(end-start)*1000
 
 		#Find Robots
-		robots = targetdetection.detectRobots(image)
+		#robots = targetdetection.detectRobots(image)
 
 
 		"""
@@ -130,7 +131,7 @@ if __name__ == "__main__":
 
 		#targets = numpy.array([])
 		#medics = numpy.array([])
-		#robots = numpy.array([])
+		robots = numpy.array([])
 
 		#(targets, medics, robots) = filterer.filterTargets(grayscaleImage, (targets, medics, robots))
 
@@ -141,9 +142,9 @@ if __name__ == "__main__":
 		#linesImage = targetfilterer.hammLines(grayscaleImage, thresh = 0, lineSize = 1, lineLength = 200)
 		#linesImage = targetfilterer.houghLines(grayscaleImage)
 
-		#Draw boundin boxes on targets
+		#Draw bounding boxes on targets
 		image = drawTargets(image, (targets, medics, robots))
-
+                cv2.imshow('test', image)
 		#test
 		"""
 		cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)
 		"""
 
-		targetToFire = prioritization.priotize((targets, medics, robots))
+		targetToFire = prioritization.prioritize((targets, medics, robots))
 		if targetToFire != None:
 			(x, y, width, height) = targetToFire
 			if (t == None) or not t.isAlive():
