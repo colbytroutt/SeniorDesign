@@ -46,9 +46,11 @@ def aim(x, y, imageWidth, imageHeight):
 	#prioritization.updateTurningMemory(yaw)
 
 
-def foo(x, y, imageWidth, imageHeight):
-	aim(x, y, imageWidth, imageHeight)
-	fire()
+def foo(x, y, imageWidth, imageHeight, aimMode, fireMode):
+        if aimMode is True:
+                aim(x, y, imageWidth, imageHeight)
+        if fireMode is True:
+                fire()
 
 
 def getDistance(x, y):
@@ -100,6 +102,9 @@ if __name__ == "__main__":
         medicMode = False
         robotMode = False
         displayMode = False
+        flywheelMode = False
+        fireMode = False
+        aimMode = False
 
 	while(True):
 
@@ -181,12 +186,12 @@ if __name__ == "__main__":
 		cv2.drawContours(borderImage, [biggestContour],-1,(0,255,0),2)
 		"""
 
-		targetToFire = prioritization.prioritize((targets, medics, robots))
-		if targetToFire != None:
-			(x, y, width, height) = targetToFire
-			if (t == None) or not t.isAlive():
-				t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0]))
-				t.start()
+                targetToFire = prioritization.prioritize((targets, medics, robots))
+                if targetToFire != None:
+                        (x, y, width, height) = targetToFire
+                        if (t == None) or not t.isAlive():
+                                t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0], aimMode, fireMode))
+                                t.start()
 
 		#cv2.imshow('Capture', image)
 
@@ -215,6 +220,7 @@ if __name__ == "__main__":
 
 			print("FPS: " + str(fpsCount))
                         print("Target Mode: {}\tMedic Mode: {}\tRobot Mode: {}\tDisplay Mode: {}".format(targetMode, medicMode, robotMode, displayMode))
+                        print("Flywheel Mode: {}\tAim Mode: {}\tFire Mode: {}".format(flyhweelMode, aimMode, fireMode))
 
 
 			#reset stuff
@@ -238,6 +244,17 @@ if __name__ == "__main__":
                 elif ch == ord ('4'):
                         displayMode = not displayMode
                         cv2.destroyAllWindows()
+                elif ch == ord ('5'):
+                        if flywheelMode is true:
+                            hc.halt()
+                        else:
+                            hc.start()
+                        flywheelMode = not flywheelMode
+                elif ch == ord('a'):
+                        aimMode = not aimMode
+                elif ch == ord('f'):
+                        fireMode = not fireMode
+
 
 
 	cap.release()
