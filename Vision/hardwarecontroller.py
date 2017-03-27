@@ -2,7 +2,7 @@ import PyCmdMessenger
 
 commands = [["aim","ii"],
 			["fire", " "],
-			["error","s"], ["halt", " "]]
+			["error","s"], ["halt", " "],["start", " "]]
 
 arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
 
@@ -22,6 +22,9 @@ def fire():
 def halt():
         global messenger
         messenger.send("halt")
+def start():
+        global messenger
+        messenger.send("start")
 if __name__ == "__main__":
 
 	while(True):

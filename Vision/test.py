@@ -12,7 +12,7 @@ import base64
 import random
 import threading
 import time
-#import hardwarecontroller as hc
+import hardwarecontroller as hc
 
 TARGET_COLOR_BGR = (0, 0, 255)
 MEDIC_COLOR_BGR = (255, 0, 0)
@@ -24,7 +24,7 @@ DELAY_PER_ANGLE = .2
 
 
 def fire():
-#	hc.fire()
+	hc.fire()
 	time.sleep(0)
 
 def aim(x, y, imageWidth, imageHeight):
@@ -41,7 +41,7 @@ def aim(x, y, imageWidth, imageHeight):
 	if abs(pitch) < 2:
 		pitch = 0
 
-#	hc.aim(yaw, pitch)
+	hc.aim(yaw, pitch)
 	time.sleep(DELAY_PER_ANGLE*max(abs(yaw), abs(pitch)))
 	#prioritization.updateTurningMemory(yaw)
 
@@ -76,8 +76,6 @@ if __name__ == "__main__":
 
 	cap.set(3, 1024);
 	cap.set(4, 720);
-	#cap.set(cv2.cv.CV_CAP_PROP_FPS, 30)
-	#print cap.get(cv2.cv.CV_CAP_PROP_FPS)
 
 	#Image feed
 	#image = cv2.imread('bigTest.png')
@@ -90,13 +88,18 @@ if __name__ == "__main__":
 	#networked variables
 	dartAmmo = 20
 	ballAmmo = 25
-	targetStatus = "OFF"
+	targetStatus = "ON"
 
 	random.seed(None)
 
 	#targetdetection.initParallelization()
 
 	t = None
+
+        targetMode = False
+        medicMode = False
+        robotMode = False
+        displayMode = False
 
 	while(True):
 
@@ -105,21 +108,28 @@ if __name__ == "__main__":
 		grayscaleImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 		#Find Targets
-
 		start = timer()
-		targets = targetdetection.detectTargets(grayscaleImage)
+                if targetMode is True:
+		    targets = targetdetection.detectTargets(grayscaleImage)
+                else:
+                    targets = numpy.array([])
 		end = timer()
 		targetAverageTime+=(end-start)*1000
 
 		#Find Medics
 		start = timer()
-		medics = targetdetection.detectMedics(grayscaleImage)
-
+                if medicMode is True:
+		    medics = targetdetection.detectMedics(grayscaleImage)
+                else:
+                    medics = numpy.array([])
                 end = timer()
 		medicAverageTime+=(end-start)*1000
 
 		#Find Robots
-		#robots = targetdetection.detectRobots(image)
+                if robotMode is True:
+                    robots = targetdetection.detectRobots(image)
+                else:
+                    robots = numpy.array([])
 
 
 		"""
@@ -128,10 +138,6 @@ if __name__ == "__main__":
 		end = timer()
 		targetAverageTime+=(end-start)*1000
 		"""
-
-		#targets = numpy.array([])
-		#medics = numpy.array([])
-		robots = numpy.array([])
 
 		#(targets, medics, robots) = filterer.filterTargets(grayscaleImage, (targets, medics, robots))
 
@@ -144,7 +150,10 @@ if __name__ == "__main__":
 
 		#Draw bounding boxes on targets
 		image = drawTargets(image, (targets, medics, robots))
-                cv2.imshow('test', image)
+
+                if displayMode is True:
+                    cv2.imshow('test', image)
+
 		#test
 		"""
 		cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -201,13 +210,12 @@ if __name__ == "__main__":
 			os.system('clear')
 
 			if(fpsCount != 0):
-				print("TargetDetection: ")
-				print(str(targetAverageTime/fpsCount) + " ms")
-				print("MedicDetection: ")
-				print(str(medicAverageTime/fpsCount) + " ms")
+				print("TargetDetection: " + str(targetAverageTime/fpsCount) + " ms")
+				print("MedicDetection: " + str(medicAverageTime/fpsCount) + " ms")
 
-			print("FPS: ")
-			print(fpsCount)
+			print("FPS: " + str(fpsCount))
+                        print("Target Mode: {}\tMedic Mode: {}\tRobot Mode: {}\tDisplay Mode: {}".format(targetMode, medicMode, robotMode, displayMode))
+
 
 			#reset stuff
 			targetAverageTime = 0
@@ -216,9 +224,21 @@ if __name__ == "__main__":
 		else:
 			fpsCount+=1
 
-		if cv2.waitKey(1) & 0xFF == ord('q'):
+		ch = cv2.waitKey(1) & 0xFF
+
+                if ch == ord('q'):
+                        hc.halt()
 			break
+                elif ch == ord('1'):
+                        targetMode = not targetMode
+                elif ch == ord('2'):
+                        targetMode = not medicMode
+                elif ch == ord('3'):
+                        robotMode = not robotMode
+                elif ch == ord ('4'):
+                        displayMode = not displayMode
+                        cv2.destroyAllWindows()
+
 
 	cap.release()
 	cv2.destroyAllWindows()
-        hc.halt()

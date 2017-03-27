@@ -17,6 +17,7 @@
 /* Define available CmdMessenger commands */
 enum {
     aim,
+    start,
     fire,
     error,
     halt,
@@ -29,6 +30,11 @@ int currentPitch = 20;
 
 const int BAUD_RATE = 9600;
 CmdMessenger messenger = CmdMessenger(Serial,',',';','/');
+
+void onStart(void) {
+    digitalWrite(FLY_ONE, HIGH);
+    digitalWrite(FLY_TWO, HIGH);
+}
 
 void onHalt(void) {
     digitalWrite(FLY_ONE, LOW);
@@ -82,6 +88,7 @@ void attach_callbacks(void) {
     messenger.attach(fire, onFire);
     messenger.attach(on_unknown_command);
     messenger.attach(halt, onHalt);
+    messenger.attach(start, onStart);
 }
 
 void setup() {
@@ -93,8 +100,6 @@ void setup() {
     pitchServo.write(currentPitch);
     pinMode(FLY_ONE, OUTPUT);
     pinMode(FLY_TWO, OUTPUT);
-    digitalWrite(FLY_ONE, HIGH);
-    digitalWrite(FLY_ONE, HIGH);
     pinMode(TRIGGER_ONE, OUTPUT);
     pinMode(TRIGGER_TWO, OUTPUT);
 }
