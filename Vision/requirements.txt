@@ -1,2 +1,0 @@
-opencv-python==3.2.0.6
-pycuda==2016.1.2

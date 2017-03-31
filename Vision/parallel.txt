@@ -1,3 +1,0 @@
-from multiprocessing import Process, Queue
-
-targetProcess = Process(target=detectTargets, args=(targetQueue, grayscaleImage))
