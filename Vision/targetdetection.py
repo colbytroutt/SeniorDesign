@@ -5,10 +5,11 @@ from multiprocessing import Process, Queue, Lock
 import multiprocessing
 #import robot
 from nms import non_max_suppression_fast
+import sys, os
 
 #Load classifiers
-TARGET_CLASSIFIER = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
-TARGET_CLASSIFIER1 = cv2.CascadeClassifier("haarcascades/haarcascade_profileface.xml")
+TARGET_CLASSIFIER = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_frontalface_default.xml")
+TARGET_CLASSIFIER1 = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_profileface.xml")
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())

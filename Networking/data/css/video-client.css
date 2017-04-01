@@ -1,0 +1,102 @@
+body {
+	padding: 0;
+	margin: 0;
+}
+
+#video-feed {
+	width: 100%;
+	height: 100%;
+	float: left;
+}
+
+#info {
+	float: right;
+	padding: 10px;
+	width: 20%;
+	height: 100%;
+	color: rbg(0, 0, 0);
+}
+
+#battery {
+	position: absolute;
+	right: 35px;
+	top: 10px;
+	font-size: 4em;
+	color: green;
+}
+
+#ammocontainer {
+	text-align: center;
+	color: white;
+	position: absolute;
+	left: 17px;
+	top: 0;
+	width: 200px;
+	height: 240px;
+	background-color: rgba(39, 39, 39, 0.8);
+}
+
+#ammocontainer h1 {
+	font-size: 25pt;
+}
+
+#ammocontainer table {
+	width: 100%;
+}
+
+#ammocontainer table tr .number {
+	text-align: right;
+	width: 50%;
+	color: white;
+	font-size: 52pt;
+}
+
+#ammocontainer table tr .x {
+	text-align: center;
+	width: 20%;
+	color: white;
+	font-size: 20pt;
+	vertical-align: bottom;
+	padding-bottom: 15px;
+}
+
+#ammocontainer table tr .ammo-image {
+	text-align: center;
+	color: white;
+}
+
+#targetstatuscontainer {
+	text-align: center;
+	color: white;
+	position: absolute;
+	top: 0;
+	left: 50%;
+	margin-left: -112px;
+	width: 224px;
+	height: 100px;
+	background-color: rgba(39, 39, 39, 0.8);
+}
+
+#targetstatuscontainer h1 {
+	font-size: 22pt;
+	padding: 0;
+	margin-top: 10px;
+}
+
+#targetstatuscontainer h2 {
+	font-size: 30pt;
+	color: red;
+	padding: 0;
+	margin: 0;
+}
+
+#optionsbutton {
+	text-align: center;
+	background-color: white;
+	color: black;
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	text-size: 20pt;
+	padding: 5px;
+}
