@@ -10,9 +10,9 @@ from timeit import default_timer as timer
 
 import config
 if config.ARDUINO_CONNECTED: import hardware.hardwarecontroller as hc
-import networking.webserver as ws
-import vision.targetdetection as targetdetection
-import vision.prioritization as prioritization
+from networking import webserver as ws
+from vision import targetdetection
+from vision import prioritization
 
 targetMode = config.TARGET_MODE_DEFAULT
 medicMode = config.MEDIC_MODE_DEFAULT
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
 			#Find Robots
 			start = timer()
-			if robotMode:
+			if robotMode is True:
 				robots = targetdetection.detectRobots(image)
 			end = timer()
 			robotAverageTime+=(end-start)*1000
@@ -203,6 +203,7 @@ if __name__ == "__main__":
 			#reset stuff
 			targetAverageTime = 0
 			medicAverageTime = 0
+			robotAverageTime = 0
 			fpsCount = 0
 		else:
 			fpsCount+=1

@@ -5,10 +5,11 @@ from multiprocessing import Process, Queue, Lock
 import multiprocessing
 #import robot
 from nms import non_max_suppression_fast
+import sys, os
 
 #Load classifiers
-TARGET_CLASSIFIER = cv2.CascadeClassifier("haarcascades/haarcascade_frontalface_default.xml")
-TARGET_CLASSIFIER1 = cv2.CascadeClassifier("haarcascades/haarcascade_profileface.xml")
+TARGET_CLASSIFIER = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_frontalface_default.xml")
+TARGET_CLASSIFIER1 = cv2.CascadeClassifier(os.path.dirname(os.path.abspath(__file__)) + "/" + "haarcascades/haarcascade_profileface.xml")
 
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -21,7 +22,7 @@ def initializeRobot():
 	#global robotDetect
 	#robotDetect = robot.Robot()
 	global fgbg
-	fgbg = cv2.BackgroundSubtractorMOG2()
+	fgbg = cv2.createBackgroundSubtractorMOG2()
 
 def detectTargets(grayscaleImage):
 
@@ -46,25 +47,27 @@ def detectMedics(grayscaleImage):
 def detectRobots(colorImage):
 	global fgbg
 	
-	fgmask = fgbg.apply(colorImage)
+	fgmask = fgbg.apply(colorImage, learningRate = 1.0/30)
+	kernel = np.ones((10,10), np.uint8)
+	erosion = cv2.erode(fgmask, kernel, iterations = 1)
+	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
 	
-	contours, hierarchy = cv2.findContours(fgmask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+	contourImage, contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	
 	biggestContour = None
 	biggestContourArea = 0
 	for contour in contours:
 		area = cv2.contourArea(contour)
-		if area > biggestContourArea and area > 0:
+		if area > biggestContourArea and area > 20:
 			peri = cv2.arcLength(contour, True)
 			approx = cv2.approxPolyDP(contour, 0.000001*peri, True)
 			biggestContour = approx
 			biggestContourArea = area
 	
 	if biggestContour is not None:
-		print cv2.boundingRect(biggestContour)
 		return np.array([cv2.boundingRect(biggestContour)])
 		
-	return numpy.array([])
+	return np.array([])
 	
 	#return robotDetect.classify(colorImage)
 

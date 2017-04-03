@@ -4,12 +4,22 @@ import tornado.websocket
 
 import thread
 import time
+import os
 
+d = None
 clients = set()
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
-		self.render("templates/index.html")
+		self.render(os.path.dirname(os.path.abspath(__file__)) + "/" + "templates/index.html")
+		
+class DataHandler(tornado.web.RequestHandler):
+	def get(self):
+		global d
+		while d is None:
+			pass
+			
+		self.write(d)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
 	def open(self):
@@ -30,16 +40,21 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
 def make_app():
 	return tornado.web.Application([
 		(r"/", MainHandler),
+		(r"/data", DataHandler),
 		(r"/websocket", SocketHandler),
-		(r"/(.*)", tornado.web.StaticFileHandler, {'path':'./templates'})
+		(r"/css/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/css"}),
+		(r"/js/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/js"}),
+		(r"/images/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/images"})
 	])
 	
 def broadCastMessage(data):
-	global clients
+	#global clients
+	global d
+	
+	d = data
 
-
-	for client in clients:
-		client.write_message(data)
+	#for client in clients:
+	#	client.write_message(data)
 
 def startServer():
 	app = make_app()
