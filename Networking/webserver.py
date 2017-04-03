@@ -16,6 +16,9 @@ class MainHandler(tornado.web.RequestHandler):
 class DataHandler(tornado.web.RequestHandler):
 	def get(self):
 		global d
+		while d is None:
+			pass
+			
 		self.write(d)
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
@@ -39,9 +42,9 @@ def make_app():
 		(r"/", MainHandler),
 		(r"/data", DataHandler),
 		(r"/websocket", SocketHandler),
-		(r"/(.css)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/css"}),
-		(r"/(.js)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/js"}),
-		(r"/(.jpg|.png)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/images"})
+		(r"/css/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/css"}),
+		(r"/js/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/js"}),
+		(r"/images/(.*)", tornado.web.StaticFileHandler, {"path": os.path.dirname(os.path.abspath(__file__)) + "/" + "data/images"})
 	])
 	
 def broadCastMessage(data):

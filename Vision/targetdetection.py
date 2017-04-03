@@ -47,15 +47,18 @@ def detectMedics(grayscaleImage):
 def detectRobots(colorImage):
 	global fgbg
 	
-	fgmask = fgbg.apply(colorImage)
+	fgmask = fgbg.apply(colorImage, learningRate = 1.0/30)
+	kernel = np.ones((10,10), np.uint8)
+	erosion = cv2.erode(fgmask, kernel, iterations = 1)
+	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
 	
-	contours, hierarchy = cv2.findContours(fgmask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+	contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	
 	biggestContour = None
 	biggestContourArea = 0
 	for contour in contours:
 		area = cv2.contourArea(contour)
-		if area > biggestContourArea and area > 0:
+		if area > biggestContourArea and area > 20:
 			peri = cv2.arcLength(contour, True)
 			approx = cv2.approxPolyDP(contour, 0.000001*peri, True)
 			biggestContour = approx
@@ -65,7 +68,7 @@ def detectRobots(colorImage):
 		print cv2.boundingRect(biggestContour)
 		return np.array([cv2.boundingRect(biggestContour)])
 		
-	return numpy.array([])
+	return np.array([])
 	
 	#return robotDetect.classify(colorImage)
 

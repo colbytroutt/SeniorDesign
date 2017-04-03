@@ -1,6 +1,21 @@
 body {
 	padding: 0;
 	margin: 0;
+	background-color: rgb(63,102,220); 
+}
+
+#video-status-container {
+	position: absolute;
+	width: 500px;
+	left: 50%;
+	top: 50%;
+	margin-left: -250px;
+	margin-top: -50px;
+	text-align: center;
+}
+
+#video-status-container #video-status {
+	color: white;
 }
 
 #video-feed {
@@ -23,9 +38,11 @@ body {
 	top: 10px;
 	font-size: 4em;
 	color: green;
+	visibility: hidden;
 }
 
 #ammocontainer {
+	visibility: hidden;
 	text-align: center;
 	color: white;
 	position: absolute;
@@ -66,6 +83,7 @@ body {
 }
 
 #targetstatuscontainer {
+	visibility: hidden;
 	text-align: center;
 	color: white;
 	position: absolute;
@@ -97,6 +115,6 @@ body {
 	position: absolute;
 	bottom: 10px;
 	left: 10px;
-	text-size: 20pt;
+	font-size: 10pt;
 	padding: 5px;
 }

@@ -1,26 +1,26 @@
 <html>
 	<head>
 		<title>Video Feed</title>
-		<script
-  src="jquery-3.1.1.min.js"
-  integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-  crossorigin="anonymous"></script>
+		<script src="js/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 		
-		<link rel="stylesheet" href="font-awesome.min.css" />
+		<link rel="stylesheet" href="css/font-awesome.min.css" />
 		
 		<!-- Latest compiled and minified CSS -->
-		<link rel="stylesheet" href="bootstrap.min.css" />
+		<link rel="stylesheet" href="css/bootstrap.min.css" />
 
 		<!-- Optional theme -->
-		<link rel="stylesheet" href="bootstrap-theme.min.css" />
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css" />
 		
 		<!-- Latest compiled and minified JavaScript -->
-		<script src="bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<script src="js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		
-		<link rel="stylesheet" href="video-client.css" />
+		<link rel="stylesheet" href="css/video-client.css" />
 	</head>
 	<body>
 		<img id="video-feed" src="" />
+		<div id="video-status-container">
+			<h1 id="video-status">Connecting to server...</h1>
+		</div>
 		<span id="battery" class="fa fa-battery-full" data-toggle="tooltip" title="100%"></span>
 		<div id="ammocontainer" class="container">
 			<h1>Ammo</h1>
@@ -28,12 +28,12 @@
 				<tr>
 					<td id="dart-count" class="number">63</td>
 					<td class="x">x</td>
-					<td class="ammo-image"><img src="dart.png" /></td>
+					<td class="ammo-image"><img src="images/dart.png" /></td>
 				</tr>
 				<tr>
 					<td id="ball-count" class="number">5</td>
 					<td class="x">x</td>
-					<td class="ammo-image"><img src="ball.png" /></td>
+					<td class="ammo-image"><img src="images/ball.png" /></td>
 				</tr>
 			</table>
 		</div>
@@ -41,63 +41,39 @@
 			<h1>Targeting</h1>
 			<h2 id="target-status">OFF</h2>
 		</div>
-		<button type="button" class="btn btn-primary" id="optionsbutton">Options</button>
+		<button id="optionsbutton">Options</button>
 	</body>
 </html>
 
 <script type="text/javascript" src="socket.io.min.js"></script>
+
 <script type="text/javascript" charset="utf-8">
 var getData;
 (getData = function() {
 	console.log("test");
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
-		if (this.readyState == 4 && this.status == 200) {
-			var jsonData = JSON.parse(xhttp.responseText);
-			document.getElementById("video-feed").src = "data:image/png;base64," + jsonData["image"];
-			document.getElementById("target-status").innerHTML = jsonData["targetStatus"];
-			document.getElementById("dart-count").innerHTML = jsonData["dartAmmo"];
-			document.getElementById("ball-count").innerHTML = jsonData["ballAmmo"];
-			getData();
+		if (this.readyState == 4) {
+			if(this.status == 200) {
+				var jsonData = JSON.parse(xhttp.responseText);
+				document.getElementById("video-feed").src = "data:image/png;base64," + jsonData["image"];
+				document.getElementById("video-feed").style.visibility = "visible";
+				document.getElementById("targetstatuscontainer").style.visibility = "visible";
+				document.getElementById("video-status-container").style.visibility = "hidden";
+				document.getElementById("target-status").innerHTML = jsonData["targetStatus"];
+				document.getElementById("dart-count").innerHTML = jsonData["dartAmmo"];
+				document.getElementById("ball-count").innerHTML = jsonData["ballAmmo"];
+				getData();
+			} else {
+				document.getElementById("video-feed").style.visibility = "hidden";
+				document.getElementById("targetstatuscontainer").style.visibility = "hidden";
+				
+				document.getElementById("video-status-container").style.visibility = "visible";
+				getData();
+			}
 		}
 	};
 	xhttp.open("GET", "/data", true);
 	xhttp.send();
 })();
 </script>
-<!--
-<script type="text/javascript" charset="utf-8">
-    
-	
-	var socket = new io.connect('ws://localhost:8888/websocket'); 
-
-    // Add a connect listener
-    socket.on('connect',function() {
-      console.log("Connected!");
-    });
-    // Add a connect listener
-    socket.on('message',function(data) {
-      //document.getElementById("ItemPreview").src = "data:image/png;base64," + data;
-    });
-    // Add a disconnect listener
-    socket.on('disconnect',function() {
-      console.log('The client has disconnected!');
-    });
-
-	
-	var ws = new WebSocket("ws://" + document.domain + ":" + location.port + "/websocket");
-	ws.onopen = function() {
-	   console.log("Connected!");
-	};
-	ws.onmessage = function(evt) {
-		var jsonData = JSON.parse(evt.data);
-		document.getElementById("video-feed").src = "data:image/png;base64," + jsonData["image"];
-		document.getElementById("target-status").innerHTML = jsonData["targetStatus"];
-		document.getElementById("dart-count").innerHTML = jsonData["dartAmmo"];
-		document.getElementById("ball-count").innerHTML = jsonData["ballAmmo"];
-	};
-	ws.onclose = function() {
-		console.log("Disconeccted!");
-	};
-</script>
--->
