@@ -7,6 +7,7 @@ import json
 import threading
 import numpy as np
 from timeit import default_timer as timer
+import PyCmdMessenger
 
 import config
 if config.ARDUINO_CONNECTED: import hardware.hardwarecontroller as hc
@@ -91,6 +92,40 @@ def sendVideoToServer(image):
 	data = json.dumps(data, separators=(',',':'))
 
 	ws.broadCastMessage(data)
+
+def motorReading():
+
+	commands = [["setTargetMode", "?"],
+				["setMedicMode", "?"],
+				["setRobotMode", "?"],
+				["setFiringMode", "?"],
+				["error","s"]]
+
+	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
+	messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
+
+	global mesenger
+	global targetMode
+	global medicMode
+	global robotMode
+	global flywheelMode
+	global fireMode
+
+	while(True):
+		msg = messenger.recieve()
+		if msg[0] == "setTargetMode":
+			targetMode = (msg[1][0] == "True")
+		elif (msg[0] == "setMedicMode"):
+			medicMode = (msg[1][0] == "True")
+		elif (msg[0] == "setRobotMode"):
+			robotMode = (msg[1][0] == "True")
+		elif (msg[0] == "setFiringMode"):
+			if(msg[1][0] == "True"):
+				hc.start()
+			else:
+				hc.halt()
+			flywheelMode = (msg[1][0] == "True")
+			fireMode = (msg[1][0] == "True")
 	
 if __name__ == "__main__":
 
@@ -127,6 +162,10 @@ if __name__ == "__main__":
 		targetdetection.initParallelization()
 
 	t = None
+	
+	motorThreading = None
+ 	motorThreading = threading.Thread(target = motorReading)
+	motorThreading.start()
 
 	while(True):
 

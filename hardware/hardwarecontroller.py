@@ -2,7 +2,7 @@ import PyCmdMessenger
 
 commands = [["aim","ii"],
 			["fire", " "],
-			["error","s"], ["halt", " "],["start", " "]]
+			["start", " "],["halt", " "],["error","s"]]
 
 arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
 messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
