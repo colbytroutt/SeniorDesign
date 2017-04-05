@@ -104,7 +104,6 @@ def motorReading():
 	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
 	messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
 
-	global mesenger
 	global targetMode
 	global medicMode
 	global robotMode
@@ -113,6 +112,11 @@ def motorReading():
 
 	while(True):
 		msg = messenger.recieve()
+		if msg[0] == None:
+			continue
+		
+		print msg
+		
 		if msg[0] == "setTargetMode":
 			targetMode = (msg[1][0] == "True")
 		elif (msg[0] == "setMedicMode"):
