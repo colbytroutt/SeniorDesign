@@ -4,9 +4,9 @@ commands = [["aim","ii"],
 			["fire", " "],
 			["start", " "],["halt", " "],["error","s"]]
 
-arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
+arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM1", baud_rate=9600)
 messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
-	
+
 def aim(yaw, pitch):
 	global messenger
 	messenger.send("aim", int(-yaw), int(-pitch))

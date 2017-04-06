@@ -26,7 +26,7 @@ def initializeRobot():
 
 def detectTargets(grayscaleImage):
 
-	targets = TARGET_CLASSIFIER.detectMultiScale(grayscaleImage, scaleFactor=1.3, minNeighbors =5, flags=0)
+        targets = TARGET_CLASSIFIER.detectMultiScale(grayscaleImage, scaleFactor=1.3, minNeighbors =5, flags=0)
 
 	if isinstance(targets, tuple):
 	    targets = np.array([])
@@ -41,19 +41,19 @@ def detectMedics(grayscaleImage):
 
 	if isinstance(medics, tuple):
 		medics = np.array([])
-	
+
 	return medics
 
 def detectRobots(colorImage):
 	global fgbg
-	
+
 	fgmask = fgbg.apply(colorImage, learningRate = 1.0/30)
 	kernel = np.ones((10,10), np.uint8)
 	erosion = cv2.erode(fgmask, kernel, iterations = 1)
 	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
-	
+
 	contourImage, contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-	
+
 	biggestContour = None
 	biggestContourArea = 0
 	for contour in contours:
@@ -63,12 +63,12 @@ def detectRobots(colorImage):
 			approx = cv2.approxPolyDP(contour, 0.000001*peri, True)
 			biggestContour = approx
 			biggestContourArea = area
-	
+
 	if biggestContour is not None:
 		return np.array([cv2.boundingRect(biggestContour)])
-		
+
 	return np.array([])
-	
+
 	#return robotDetect.classify(colorImage)
 
 def initParallelization():

@@ -30,15 +30,15 @@ def fire():
 	if config.ARDUINO_CONNECTED:
 		if fireMode:
 			hc.fire()
-	time.sleep(0)
+        time.sleep(config.FIRE_DELAY)
 
 def aim(x, y, imageWidth, imageHeight):
 
 	cameraFOV = config.CAMERA_FOV
 	delayPerAngle = config.DELAY_PER_ANGLE
 
-	yaw = (x - (imageWidth/2))*(float(CAMERA_FOV)/imageWidth)
-	pitch = (y - (imageHeight/2))*(float(CAMERA_FOV)/imageHeight)
+	yaw = (x - (imageWidth/2))*(float(cameraFOV)/imageWidth)
+	pitch = (y - (imageHeight/2))*(float(cameraFOV)/imageHeight)
 
 	if abs(yaw) < 2:
 		yaw = 0
@@ -49,8 +49,8 @@ def aim(x, y, imageWidth, imageHeight):
 	if config.ARDUINO_CONNECTED:
 		if aimMode:
 			hc.aim(yaw, pitch)
-		
-	time.sleep(DELAY_PER_ANGLE*max(abs(yaw), abs(pitch)))
+
+	time.sleep(delayPerAngle*max(abs(yaw), abs(pitch)))
 	#prioritization.updateTurningMemory(yaw)
 
 def foo(x, y, imageWidth, imageHeight, aimMode, fireMode):
@@ -76,9 +76,9 @@ def drawTargets(image, (targets, medics, robots)):
 	return image
 
 def sendVideoToServer(image):
-	
+
 	resizedImage = np.copy(image);
-	
+
 	resizedImage = cv2.resize(resizedImage, (300, 400))
 
 	ret, png = cv2.imencode('.png', image)
@@ -95,10 +95,10 @@ def sendVideoToServer(image):
 
 def motorReading():
 
-	commands = [["setTargetMode", "?"],
-				["setMedicMode", "?"],
-				["setRobotMode", "?"],
-				["setFiringMode", "?"],
+	commands = [["setTargetMode", "i"],
+				["setMedicMode", "i"],
+				["setRobotMode", "i"],
+				["setFiringMode", "i"],
 				["error","s"]]
 
 	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
@@ -111,26 +111,32 @@ def motorReading():
 	global fireMode
 
 	while(True):
-		msg = messenger.recieve()
-		if msg[0] == None:
+		msg = messenger.receive()
+		if msg == None:
 			continue
-		
-		print msg
-		
 		if msg[0] == "setTargetMode":
-			targetMode = (msg[1][0] == "True")
+		    if msg[1][0]:
+                        targetMode = True
+                    else:
+                        targetMode = False
 		elif (msg[0] == "setMedicMode"):
-			medicMode = (msg[1][0] == "True")
+		    if msg[1][0]:
+                        medicMode = True
+                    else:
+                        medicMode = False
 		elif (msg[0] == "setRobotMode"):
-			robotMode = (msg[1][0] == "True")
+		    if msg[1][0]:
+                        robotMode = True
+                    else:
+                        robotMode = False
 		elif (msg[0] == "setFiringMode"):
-			if(msg[1][0] == "True"):
+			if(not fireMode):
 				hc.start()
 			else:
 				hc.halt()
-			flywheelMode = (msg[1][0] == "True")
-			fireMode = (msg[1][0] == "True")
-	
+			flywheelMode = not flywheelMode
+			fireMode = not fireMode
+
 if __name__ == "__main__":
 
 	#Camera feed
@@ -144,7 +150,7 @@ if __name__ == "__main__":
 
 	fpsTimer = timer()
 	fpsCount = 0
-	
+
 	targetAverageTime = 0
 	medicAverageTime = 0
 	robotAverageTime = 0
@@ -158,18 +164,21 @@ if __name__ == "__main__":
 	random.seed(None)
 
 	ws.startServer()
-	
-	if robotMode is True:
-		targetdetection.initializeRobot()
-	
+
+	targetdetection.initializeRobot()
+
 	if parallelMode is True:
 		targetdetection.initParallelization()
 
 	t = None
-	
+
 	motorThreading = None
  	motorThreading = threading.Thread(target = motorReading)
+	motorThreading.daemon = True
 	motorThreading.start()
+
+        if flywheelMode == True:
+            hc.start()
 
 	while(True):
 
@@ -180,10 +189,10 @@ if __name__ == "__main__":
 		targets = np.array([])
 		medics = np.array([])
 		robots = np.array([])
-		
+
 		#find targets sequentially
 		if parallelMode is False:
-		
+
 			#Find Targets
 			start = timer()
 			if targetMode is True:
@@ -204,7 +213,7 @@ if __name__ == "__main__":
 				robots = targetdetection.detectRobots(image)
 			end = timer()
 			robotAverageTime+=(end-start)*1000
-		
+
 		else:
 			start = timer()
 			(targets, medics, robots) = targetdetection.detectAllTargetsParallel(grayscaleImage)
@@ -214,7 +223,7 @@ if __name__ == "__main__":
 
 		#Draw bounding boxes on targets
 		image = drawTargets(image, (targets, medics, robots))
-		
+
 		if displayMode is True:
 			cv2.imshow('Video Client', image)
 
@@ -225,7 +234,7 @@ if __name__ == "__main__":
 				t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0], aimMode, fireMode))
 				t.start()
 
-		
+
 		sendVideoToServer(image)
 
 		if(timer() - fpsTimer > 1):
@@ -242,19 +251,19 @@ if __name__ == "__main__":
 			print("FPS: " + str(fpsCount))
 			print("Target Mode: {}\tMedic Mode: {}\tRobot Mode: {}\tDisplay Mode: {}".format(targetMode, medicMode, robotMode, displayMode))
 			print("Flywheel Mode: {}\tAim Mode: {}\tFire Mode: {}".format(flywheelMode, aimMode, fireMode))
-			
+
 			#reset stuff
 			targetAverageTime = 0
 			medicAverageTime = 0
 			robotAverageTime = 0
 			fpsCount = 0
 		else:
-			fpsCount+=1
+			fpsCount += 1
 
-		ch = cv2.waitKey(1) & 0xFF
+                ch = cv2.waitKey(1) & 0xFF
 
 		if ch == ord('q'):
-				break
+		    	break
 		elif ch == ord('1'):
 			targetMode = not targetMode
 		elif ch == ord('2'):
@@ -277,9 +286,9 @@ if __name__ == "__main__":
 
 	if parallelMode is True:
 		targetdetection.destroyThreads()
-	
+
 	if config.ARDUINO_CONNECTED is True:
 		hc.halt()
-		
+
 	cap.release()
 	cv2.destroyAllWindows()
