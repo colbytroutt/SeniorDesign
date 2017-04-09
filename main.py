@@ -26,6 +26,10 @@ flywheelMode = config.FLYWHEEL_MODE_DEFAULT
 fireMode = config.FIRE_MODE_DEFAULT
 aimMode = config.AIM_MODE_DEFAULT
 
+#networked variables
+dartAmmo = 20
+ballAmmo = 25
+
 def fire():
 	if config.ARDUINO_CONNECTED:
 		if fireMode:
@@ -38,8 +42,9 @@ def aim(x, y, imageWidth, imageHeight):
 	delayPerAngle = config.DELAY_PER_ANGLE
 
 	yaw = (x - (imageWidth/2))*(float(cameraFOV)/imageWidth)
+        yaw -= 2
 	pitch = (y - (imageHeight/2))*(float(cameraFOV)/imageHeight)
-        pitch -= 5
+        pitch -= 6
 
 	if abs(yaw) < 2:
 		yaw = 0
@@ -78,6 +83,28 @@ def drawTargets(image, (targets, medics, robots)):
 
 def sendVideoToServer(image):
 
+	global targetMode
+	global medicMode
+	global robotMode
+
+	global dartAmmo
+	global ballAmmo
+
+	if targetMode:
+		targetStatus = "ON"
+	else:
+		targetStatus = "OFF"
+
+	if medicMode:
+		medicStatus = "ON"
+	else:
+		medicStatus = "OFF"
+
+	if robotMode:
+		robotStatus = "ON"
+	else:
+		robotStatus = "OFF"
+
 	resizedImage = np.copy(image);
 
 	resizedImage = cv2.resize(resizedImage, (300, 400))
@@ -89,6 +116,8 @@ def sendVideoToServer(image):
 	data["dartAmmo"] = dartAmmo
 	data["ballAmmo"] = ballAmmo
 	data["targetStatus"] = targetStatus
+	data["medicStatus"] = medicStatus
+	data["robotStatus"] = robotStatus
 
 	data = json.dumps(data, separators=(',',':'))
 
@@ -138,19 +167,25 @@ def motorReading():
                     if msg[1][0]:
                         flywheelMode = True
                         fireMode = True
-			hc.start()
+			#hc.start()
 		    else:
                         flywheelMode = False
                         fireMode = False
-			hc.halt()
+			#hc.halt()
 
 if __name__ == "__main__":
 
 	#Camera feed
 	cap = cv2.VideoCapture(0)
 
-	cap.set(3, 1024);
-	cap.set(4, 720);
+	cap.set(3, 1024)
+	cap.set(4, 720)
+        cap.set(10, 1.0) # Brightness
+        cap.set(11, 1.0) # Contrast
+        cap.set(12, 0.8) # Saturation
+        cap.set(13, .64) # Hue
+        cap.set(14, 0.8) # Gain
+        cap.set(15, 1) # Saturation
 
 	#Image feed
 	#image = cv2.imread('SampleImages/picture.jpg')
@@ -162,11 +197,6 @@ if __name__ == "__main__":
 	medicAverageTime = 0
 	robotAverageTime = 0
 	parallelAverageTime = 0
-
-	#networked variables
-	dartAmmo = 20
-	ballAmmo = 25
-	targetStatus = "ON"
 
 	random.seed(None)
 
@@ -221,6 +251,7 @@ if __name__ == "__main__":
 			end = timer()
 			robotAverageTime+=(end-start)*1000
 
+
 		else:
 			start = timer()
 			(targets, medics, robots) = targetdetection.detectAllTargetsParallel(grayscaleImage)
@@ -239,6 +270,7 @@ if __name__ == "__main__":
 			(x, y, width, height) = targetToFire
 			if (t == None) or not t.isAlive():
 				t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0], aimMode, fireMode))
+                                t.daemon = True
 				t.start()
 
 
@@ -266,6 +298,9 @@ if __name__ == "__main__":
 			fpsCount = 0
 		else:
 			fpsCount += 1
+
+                if len(robots) != 0 and len(medics) == 0:
+                    time.sleep(2)
 
                 ch = cv2.waitKey(1) & 0xFF
 

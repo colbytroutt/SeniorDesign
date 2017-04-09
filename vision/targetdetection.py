@@ -23,7 +23,7 @@ def initializeRobot():
 	#global robotDetect
 	#robotDetect = robot.Robot()
 	global fgbg
-	fgbg = cv2.createBackgroundSubtractorMOG2()
+	fgbg = cv2.createBackgroundSubtractorMOG2(history = 500, varThreshold = 16, detectShadows = False)
 
 def detectTargets(grayscaleImage):
 

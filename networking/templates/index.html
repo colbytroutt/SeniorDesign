@@ -37,6 +37,23 @@
 				</tr>
 			</table>
 		</div>
+		<div id="detectioncontainer" class="container">
+			<h1>Modes</h1>
+			<table>
+				<tr>
+					<td id="target-status-id" class="title">Targets:</td>
+					<td id="target-status" class="detection-status">OFF</td>
+				</tr>
+				<tr>
+					<td id="medic-status-id" class="title">Medics:</td>
+					<td id="medic-status" class="detection-status">OFF</td>
+				</tr>
+				<tr>
+					<td id="robot-status-id" class="title">Robots:</td>
+					<td id="robot-status" class="detection-status">OFF</td>
+				</tr>
+			</table>
+		</div>
 		<div id="targetstatuscontainer">
 			<h1>Targeting</h1>
 			<h2 id="target-status">OFF</h2>
@@ -58,16 +75,19 @@ var getData;
 				var jsonData = JSON.parse(xhttp.responseText);
 				document.getElementById("video-feed").src = "data:image/png;base64," + jsonData["image"];
 				document.getElementById("video-feed").style.visibility = "visible";
-				document.getElementById("targetstatuscontainer").style.visibility = "visible";
+				document.getElementById("detectioncontainer").style.visibility = "visible";
+				//document.getElementById("targetstatuscontainer").style.visibility = "visible";
 				document.getElementById("video-status-container").style.visibility = "hidden";
 				document.getElementById("target-status").innerHTML = jsonData["targetStatus"];
+				document.getElementById("medic-status").innerHTML = jsonData["medicStatus"];
+				document.getElementById("robot-status").innerHTML = jsonData["robotStatus"];
 				document.getElementById("dart-count").innerHTML = jsonData["dartAmmo"];
 				document.getElementById("ball-count").innerHTML = jsonData["ballAmmo"];
 				getData();
 			} else {
 				document.getElementById("video-feed").style.visibility = "hidden";
-				document.getElementById("targetstatuscontainer").style.visibility = "hidden";
-				
+				//document.getElementById("targetstatuscontainer").style.visibility = "hidden";
+				document.getElementById("detectioncontainer").style.visibility = "hidden";
 				document.getElementById("video-status-container").style.visibility = "visible";
 				setTimeout(getData, 200);
 			}

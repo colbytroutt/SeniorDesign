@@ -82,6 +82,43 @@ body {
 	color: white;
 }
 
+#detectioncontainer {
+	visibility: hidden;
+	text-align: center;
+	color: white;
+	position: absolute;
+	left: 17px;
+	top: 0;
+	width: 200px;
+	height: 240px;
+	background-color: rgba(39, 39, 39, 0.8);
+}
+
+#detectioncontainer h1 {
+	font-size: 25pt;
+}
+
+#detectioncontainer table {
+	width: 100%;
+}
+
+#detectioncontainer table tr td {
+	padding-bottom: 30px;
+}
+
+#detectioncontainer table tr .title {
+	text-align: right;
+	width: 50%;
+	color: white;
+	font-size: 20pt;
+}
+
+#detectioncontainer table tr .detection-status {
+	text-align: center;
+	color: white;
+	font-size: 18pt;
+}
+
 #targetstatuscontainer {
 	visibility: hidden;
 	text-align: center;
