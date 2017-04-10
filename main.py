@@ -1,3 +1,4 @@
+#!/usr/bin/env python2
 import cv2
 import math
 import base64
@@ -10,7 +11,7 @@ from timeit import default_timer as timer
 import PyCmdMessenger
 
 import config
-if config.ARDUINO_CONNECTED: import hardware.hardwarecontroller as hc
+if config.TURRET_ARDUINO_CONNECTED: import hardware.hardwarecontroller as hc
 from networking import webserver as ws
 from vision import targetdetection
 from vision import prioritization
@@ -31,7 +32,7 @@ dartAmmo = 20
 ballAmmo = 25
 
 def fire():
-	if config.ARDUINO_CONNECTED:
+	if config.TURRET_ARDUINO_CONNECTED:
 		if fireMode:
 			hc.fire()
         time.sleep(config.FIRE_DELAY)
@@ -52,7 +53,7 @@ def aim(x, y, imageWidth, imageHeight):
 	if abs(pitch) < 2:
 		pitch = 0
 
-	if config.ARDUINO_CONNECTED:
+	if config.TURRET_ARDUINO_CONNECTED:
 		if aimMode:
 			hc.aim(yaw, pitch)
 
@@ -107,12 +108,12 @@ def sendVideoToServer(image):
 
 	resizedImage = np.copy(image);
 
-	resizedImage = cv2.resize(resizedImage, (300, 400))
+	resizedImage = cv2.resize(resizedImage, (480, 640))
 
-	ret, png = cv2.imencode('.png', image)
+	ret, jpg = cv2.imencode('.jpg', resizedImage)
 
 	data = {}
-	data["image"] = base64.b64encode(png)
+	data["image"] = base64.b64encode(jpg)
 	data["dartAmmo"] = dartAmmo
 	data["ballAmmo"] = ballAmmo
 	data["targetStatus"] = targetStatus
@@ -180,12 +181,12 @@ if __name__ == "__main__":
 
 	cap.set(3, 1024)
 	cap.set(4, 720)
-        cap.set(10, 1.0) # Brightness
-        cap.set(11, 1.0) # Contrast
-        cap.set(12, 0.8) # Saturation
-        cap.set(13, .64) # Hue
-        cap.set(14, 0.8) # Gain
-        cap.set(15, 1) # Saturation
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, 1.0) # Brightness
+        cap.set(cv2.CAP_PROP_CONTRAST, 1.0) # Contrast
+        cap.set(cv2.CAP_PROP_SATURATION, 1.0) # Saturation
+        cap.set(cv2.CAP_PROP_HUE, 1.0) # Hue
+        cap.set(cv2.CAP_PROP_GAIN, 1.0) # Gain
+        #cap.set(15, 15) # Saturation
 
 	#Image feed
 	#image = cv2.imread('SampleImages/picture.jpg')
@@ -209,10 +210,11 @@ if __name__ == "__main__":
 
 	t = None
 
-	motorThreading = None
- 	motorThreading = threading.Thread(target = motorReading)
-	motorThreading.daemon = True
-	motorThreading.start()
+        if config.DRIVETRAIN_ARDUINO_CONNECTED:
+	        motorThreading = None
+ 	        motorThreading = threading.Thread(target = motorReading)
+	        motorThreading.daemon = True
+	        motorThreading.start()
 
         if flywheelMode == True:
             hc.start()
@@ -316,11 +318,12 @@ if __name__ == "__main__":
 			displayMode = not displayMode
 			cv2.destroyAllWindows()
 		elif ch == ord ('5'):
-			if flywheelMode is true:
-				hc.halt()
-			else:
-				hc.start()
-				flywheelMode = not flywheelMode
+		        if config.TURRET_ARDUINO_CONNECTED:
+                                if flywheelMode is True:
+				        hc.halt()
+			        else:
+				        hc.start()
+		        flywheelMode = not flywheelMode
 		elif ch == ord('a'):
 			aimMode = not aimMode
 		elif ch == ord('f'):
@@ -329,7 +332,7 @@ if __name__ == "__main__":
 	if parallelMode is True:
 		targetdetection.destroyThreads()
 
-	if config.ARDUINO_CONNECTED is True:
+	if config.TURRET_ARDUINO_CONNECTED is True:
 		hc.halt()
 
 	cap.release()
