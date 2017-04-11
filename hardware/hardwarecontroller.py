@@ -1,27 +1,44 @@
 import PyCmdMessenger
 
 commands = [["aim","ii"],
-			["fire", " "],
-			["start", " "],["halt", " "],["error","s"]]
+			["fireDart", " "], ["fireBall", " "],
+			["setDartFlywheel", "?"], ["setBallFlywheel", "?"],
+                        ["setDartDelay", "i"], ["setBallDelay", "i"],
+                        ["error","s"]]
 
-arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM1", baud_rate=9600)
-messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
+def connect():
+	global messenger
+
+	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM1", baud_rate=9600)
+	messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
 
 def aim(yaw, pitch):
 	global messenger
 	messenger.send("aim", int(-yaw), int(-pitch))
 
-def fire():
+def fireDart():
 	global messenger
-	messenger.send("fire")
+	messenger.send("fireDart")
 
-def halt():
-	global messenger
-	messenger.send("halt")
+def fireBall():
+        global messenger
+        messenger.send("fireBall")
 
-def start():
+def setDartFlywheel(cond):
 	global messenger
-	messenger.send("start")
+	messenger.send("setDartFlywheel", cond)
+
+def setBallFlywheel(cond):
+	global messenger
+	messenger.send("setBallFlywheel", cond)
+
+def setDartDelay(delay):
+        global messenger
+        messenger.send("setDartDelay", delay)
+
+def setBallDelay(delay):
+        global messenger
+        messenger.send("setBallDelay", delay)
 
 if __name__ == "__main__":
 

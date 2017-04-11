@@ -11,7 +11,7 @@ from timeit import default_timer as timer
 import PyCmdMessenger
 
 import config
-if config.TURRET_ARDUINO_CONNECTED: import hardware.hardwarecontroller as hc
+import hardware.hardwarecontroller as hc
 from networking import webserver as ws
 from vision import targetdetection
 from vision import prioritization
@@ -28,13 +28,23 @@ fireMode = config.FIRE_MODE_DEFAULT
 aimMode = config.AIM_MODE_DEFAULT
 
 #networked variables
-dartAmmo = 20
-ballAmmo = 25
+dartAmmo = 8
+ballAmmo = 16
 
 def fire():
-	if config.TURRET_ARDUINO_CONNECTED:
-		if fireMode:
-			hc.fire()
+        global ballAmmo
+        global dartAmmo
+        if config.TURRET_ARDUINO_CONNECTED:
+            if fireMode:
+                if ballAmmo > 0:
+		    hc.fireBall()
+                    ballAmmo -= 1
+                    if ballAmmo == 0:
+                        hc.setBallFlywheel(False)
+                        hc.setDartFlywheel(True)
+                else:
+                    hc.fireDart()
+                    dartAmmo -= 1
         time.sleep(config.FIRE_DELAY)
 
 def aim(x, y, imageWidth, imageHeight):
@@ -140,11 +150,13 @@ def motorReading():
 	global robotMode
 	global flywheelMode
 	global fireMode
+        global ballAmmo
 
 	while(True):
-		msg = messenger.receive()
+            try:
+                msg = messenger.receive()
 
-                if msg == None:
+                if not isinstance(msg, tuple):
 			continue
 
                 print msg
@@ -168,11 +180,19 @@ def motorReading():
                     if msg[1][0]:
                         flywheelMode = True
                         fireMode = True
-			#hc.start()
+                        if ballAmmo > 0:
+			    hc.setBallFlywheel(True)
+                        else:
+                            hc.setDartFlywheel(True)
 		    else:
                         flywheelMode = False
                         fireMode = False
-			#hc.halt()
+                        if ballAmmo > 0:
+			    hc.setBallFlywheel(False)
+                        else:
+                            hc.setDartFlywheel(False)
+            except:
+                pass
 
 if __name__ == "__main__":
 
@@ -181,11 +201,11 @@ if __name__ == "__main__":
 
 	cap.set(3, 1024)
 	cap.set(4, 720)
-        cap.set(cv2.CAP_PROP_BRIGHTNESS, 1.0) # Brightness
-        cap.set(cv2.CAP_PROP_CONTRAST, 1.0) # Contrast
-        cap.set(cv2.CAP_PROP_SATURATION, 1.0) # Saturation
-        cap.set(cv2.CAP_PROP_HUE, 1.0) # Hue
-        cap.set(cv2.CAP_PROP_GAIN, 1.0) # Gain
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5) # Brightness
+        cap.set(cv2.CAP_PROP_CONTRAST, 0.0) # Contrast
+        cap.set(cv2.CAP_PROP_SATURATION, 1) # Saturation
+        cap.set(cv2.CAP_PROP_HUE, 1) # Hue
+        cap.set(cv2.CAP_PROP_GAIN, 1) # Gain
         #cap.set(15, 15) # Saturation
 
 	#Image feed
@@ -210,14 +230,19 @@ if __name__ == "__main__":
 
 	t = None
 
+	if config.TURRET_ARDUINO_CONNECTED:
+		hc.connect()
+                hc.setBallDelay(115)
+                hc.setDartDelay(175)
+
         if config.DRIVETRAIN_ARDUINO_CONNECTED:
 	        motorThreading = None
  	        motorThreading = threading.Thread(target = motorReading)
 	        motorThreading.daemon = True
 	        motorThreading.start()
 
-        if flywheelMode == True:
-            hc.start()
+        if flywheelMode is True:
+            hc.setBallFlywheel(True)
 
 	while(True):
 
@@ -320,9 +345,11 @@ if __name__ == "__main__":
 		elif ch == ord ('5'):
 		        if config.TURRET_ARDUINO_CONNECTED:
                                 if flywheelMode is True:
-				        hc.halt()
+				        hc.setBallFlywheel(False)
+                                        hc.setDartFlywheel(False)
 			        else:
-				        hc.start()
+				        hc.setBallFlywheel(True)
+                                        hc.setDartFlywheel(True)
 		        flywheelMode = not flywheelMode
 		elif ch == ord('a'):
 			aimMode = not aimMode
@@ -333,7 +360,8 @@ if __name__ == "__main__":
 		targetdetection.destroyThreads()
 
 	if config.TURRET_ARDUINO_CONNECTED is True:
-		hc.halt()
+		hc.setBallFlywheel(False)
+                hc.setDartFlywheel(False)
 
 	cap.release()
 	cv2.destroyAllWindows()
