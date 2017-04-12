@@ -4,12 +4,12 @@ commands = [["aim","ii"],
 			["fireDart", " "], ["fireBall", " "],
 			["setDartFlywheel", "?"], ["setBallFlywheel", "?"],
                         ["setDartDelay", "i"], ["setBallDelay", "i"],
-                        ["error","s"]]
+                        ["resetAim", " "], ["error","s"]]
 
-def connect():
+def connect(turretName):
 	global messenger
 
-	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM1", baud_rate=9600)
+	arduino = PyCmdMessenger.ArduinoBoard(turretName, baud_rate=9600)
 	messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
 
 def aim(yaw, pitch):
@@ -39,6 +39,10 @@ def setDartDelay(delay):
 def setBallDelay(delay):
         global messenger
         messenger.send("setBallDelay", delay)
+
+def resetAim():
+        global messenger
+        messenger.send("resetAim")
 
 if __name__ == "__main__":
 

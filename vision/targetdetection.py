@@ -51,10 +51,10 @@ def detectMedics(grayscaleImage):
 def detectRobots(colorImage):
 	global fgbg
 
-	fgmask = fgbg.apply(colorImage, learningRate = 1.0/15)
+	fgmask = fgbg.apply(colorImage, learningRate = 1.0/1)
 	kernel = np.ones((30,30), np.uint8)
 	erosion = cv2.erode(fgmask, kernel, iterations = 1)
-	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
+#	dilation = cv2.dilate(fgmask, kernel, iterations = 1)
 
 	contourImage, contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 

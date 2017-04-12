@@ -53,9 +53,9 @@ def aim(x, y, imageWidth, imageHeight):
 	delayPerAngle = config.DELAY_PER_ANGLE
 
 	yaw = (x - (imageWidth/2))*(float(cameraFOV)/imageWidth)
-        yaw -= 2
+        #yaw -= 2
 	pitch = (y - (imageHeight/2))*(float(cameraFOV)/imageHeight)
-        pitch -= 6
+        pitch -= 5
 
 	if abs(yaw) < 2:
 		yaw = 0
@@ -63,8 +63,15 @@ def aim(x, y, imageWidth, imageHeight):
 	if abs(pitch) < 2:
 		pitch = 0
 
-	if config.TURRET_ARDUINO_CONNECTED:
+        if not (yaw == 0 and pitch == 0):
+	    if config.TURRET_ARDUINO_CONNECTED:
 		if aimMode:
+                        print "yaw: "
+                        print yaw
+                        print "\n"
+                        print "pitch: "
+                        print pitch
+                        print "\n"
 			hc.aim(yaw, pitch)
 
 	time.sleep(delayPerAngle*max(abs(yaw), abs(pitch)))
@@ -142,7 +149,7 @@ def motorReading():
 				["setFiringMode", "i"],
 				["error","s"]]
 
-	arduino = PyCmdMessenger.ArduinoBoard("/dev/ttyACM0", baud_rate=9600)
+	arduino = PyCmdMessenger.ArduinoBoard(config.DRIVETRAIN_ARDUINO_NAME, baud_rate=9600)
 	messenger = PyCmdMessenger.CmdMessenger(arduino, commands)
 
 	global targetMode
@@ -201,11 +208,11 @@ if __name__ == "__main__":
 
 	cap.set(3, 1024)
 	cap.set(4, 720)
-        cap.set(cv2.CAP_PROP_BRIGHTNESS, 0.5) # Brightness
-        cap.set(cv2.CAP_PROP_CONTRAST, 0.0) # Contrast
-        cap.set(cv2.CAP_PROP_SATURATION, 1) # Saturation
-        cap.set(cv2.CAP_PROP_HUE, 1) # Hue
-        cap.set(cv2.CAP_PROP_GAIN, 1) # Gain
+        cap.set(cv2.CAP_PROP_BRIGHTNESS, config.BRIGHTNESS) # Brightness
+        cap.set(cv2.CAP_PROP_CONTRAST, config.CONTRAST) # Contrast
+        cap.set(cv2.CAP_PROP_SATURATION, config.SATURATION) # Saturation
+        cap.set(cv2.CAP_PROP_HUE, config.HUE) # Hue
+        cap.set(cv2.CAP_PROP_GAIN, config.GAIN) # Gain
         #cap.set(15, 15) # Saturation
 
 	#Image feed
@@ -218,6 +225,7 @@ if __name__ == "__main__":
 	medicAverageTime = 0
 	robotAverageTime = 0
 	parallelAverageTime = 0
+        noTargetCounter = 0
 
 	random.seed(None)
 
@@ -231,9 +239,9 @@ if __name__ == "__main__":
 	t = None
 
 	if config.TURRET_ARDUINO_CONNECTED:
-		hc.connect()
+		hc.connect(config.TURRET_ARDUINO_NAME)
                 hc.setBallDelay(115)
-                hc.setDartDelay(175)
+                hc.setDartDelay(200)
 
         if config.DRIVETRAIN_ARDUINO_CONNECTED:
 	        motorThreading = None
@@ -299,6 +307,9 @@ if __name__ == "__main__":
 				t = threading.Thread(target = foo, args = (x+(width/2), y+(height/2), grayscaleImage.shape[1], grayscaleImage.shape[0], aimMode, fireMode))
                                 t.daemon = True
 				t.start()
+
+                if not (robotMode or targetMode or medicMode):
+                    hc.resetAim()
 
 
 		sendVideoToServer(image)
